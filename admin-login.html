@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>검사 키트 신청 | Wellscore</title>
+<title>관리자 로그인 | Wellscore</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩸</text></svg>">
 <style>
 /* =================================================================
@@ -664,73 +665,39 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
 
 </style>
 </head>
-<body>
+<body style="padding-top:0;">
 
-<header class="nav-header" id="navHeader">
-  <div class="nav-container">
-    <a href="index.html" class="logo">Wellscore</a>
-    <nav class="nav-links">
-      <a href="about-nad.html">NAD+ 검사란</a>
-      <a href="store.html">구매하기</a>
-      <a href="index.html#how-it-works">이용방법</a>
-      <a href="index.html#faq">FAQ</a>
-    </nav>
-    <div class="nav-auth" id="navAuth"></div>
-    <button class="nav-mobile-toggle" id="navMobileToggle" aria-label="메뉴 열기"><span></span><span></span><span></span></button>
+<header class="admin-topbar">
+  <div class="admin-topbar-inner">
+    <span class="admin-logo">Wellscore<span class="admin-tag">관리자</span></span>
   </div>
 </header>
-<div class="nav-mobile-menu" id="navMobileMenu">
-  <a href="about-nad.html">NAD+ 검사란</a>
-  <a href="store.html">구매하기</a>
-  <a href="index.html#how-it-works">이용방법</a>
-  <a href="index.html#faq">FAQ</a>
-  <div class="mobile-auth" id="navAuthMobile"></div>
-</div>
-
 
 <main>
-  <div class="request-shell">
-    <h1>검사 키트 신청</h1>
-    <p class="sub">검사권 1개를 사용해 키트를 신청해요. 가입 시 등록한 주소가 자동으로 입력되며, 다른 곳으로 받으실 경우 수정할 수 있어요.</p>
-    <div class="voucher-note">보유 검사권 <span id="voucherRemaining">0</span>개</div>
+  <div class="auth-shell" style="min-height:calc(100vh - 60px);">
+    <div class="auth-card">
+      <h1>관리자 로그인</h1>
+      <p class="sub">검사 신청 관리 및 결과 입력은 내부 담당자 전용이에요.</p>
 
-    <div class="form-error" id="formError"></div>
+      <div class="form-error" id="formError"></div>
 
-    <form id="kitRequestForm" novalidate>
-      <div class="field">
-        <label for="recipientName">받으실 분 성함</label>
-        <input type="text" id="recipientName" autocomplete="name">
-      </div>
-      <div class="field">
-        <label for="recipientPhone">연락처</label>
-        <input type="tel" id="recipientPhone" autocomplete="tel" placeholder="010-0000-0000">
-      </div>
-      <div class="field">
-        <label for="zonecode">우편번호</label>
-        <div class="field-with-btn">
-          <input type="text" id="zonecode" readonly placeholder="우편번호 검색을 눌러주세요">
-          <button type="button" class="btn btn-outline" onclick="execDaumPostcode()">주소 검색</button>
+      <form id="adminLoginForm" novalidate>
+        <div class="field">
+          <label for="email">관리자 이메일</label>
+          <input type="email" id="email" autocomplete="username" placeholder="admin@wellscore.example">
         </div>
-      </div>
-      <div class="field">
-        <label for="address">기본 주소</label>
-        <input type="text" id="address" readonly>
-      </div>
-      <div class="field">
-        <label for="addressDetail">상세 주소</label>
-        <input type="text" id="addressDetail" placeholder="동/호수 등 상세 주소를 입력해주세요">
-      </div>
-      <button type="submit" class="btn btn-primary btn-lg btn-block">신청 완료</button>
-    </form>
+        <div class="field">
+          <label for="password">비밀번호</label>
+          <input type="password" id="password" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-dark btn-lg btn-block">로그인</button>
+      </form>
 
-    <div class="no-voucher-block" id="noVoucherBlock">
-      <p>보유한 검사권이 없어요. 먼저 검사권을 구매해주세요.</p>
-      <a href="store.html" class="btn btn-primary">검사권 구매하러 가기</a>
+      <p class="form-note">데모 계정: admin@wellscore.example / admin1234</p>
     </div>
   </div>
 </main>
 
-<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
 /* =================================================================
    main.js — 모든 페이지 공통 스크립트
@@ -990,63 +957,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </script>
 <script>
-
-
 document.addEventListener('DOMContentLoaded', () => {
-  const user = getCurrentUser();
-  if (!user) {
-    window.location.href = 'login.html';
-    return;
-  }
+  if (getAdminSession()) { window.location.href = 'admin-dashboard.html'; return; }
 
-  const voucherCount = getVouchers(user.email);
-  document.getElementById('voucherRemaining').textContent = voucherCount;
-
-  const form = document.getElementById('kitRequestForm');
-  const noVoucherBlock = document.getElementById('noVoucherBlock');
-
-  if (voucherCount < 1) {
-    form.style.display = 'none';
-    noVoucherBlock.style.display = 'block';
-    return;
-  }
-
-  document.getElementById('recipientName').value = user.name;
-  document.getElementById('recipientPhone').value = user.phone;
-  if (user.zonecode) document.getElementById('zonecode').value = user.zonecode;
-  if (user.address) document.getElementById('address').value = user.address;
-  if (user.addressDetail) document.getElementById('addressDetail').value = user.addressDetail;
-
+  const form = document.getElementById('adminLoginForm');
   const errorEl = document.getElementById('formError');
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     errorEl.style.display = 'none';
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
 
-    const recipientName = document.getElementById('recipientName').value.trim();
-    const recipientPhone = document.getElementById('recipientPhone').value.trim();
-    const zonecode = document.getElementById('zonecode').value.trim();
-    const address = document.getElementById('address').value.trim();
-    const addressDetail = document.getElementById('addressDetail').value.trim();
-
-    if (!recipientName || !recipientPhone || !zonecode || !address || !addressDetail) {
-      errorEl.textContent = '모든 항목을 입력해주세요.';
+    if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+      setAdminSession(true);
+      window.location.href = 'admin-dashboard.html';
+    } else {
+      errorEl.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
       errorEl.style.display = 'block';
-      return;
     }
-
-    setVouchers(user.email, voucherCount - 1);
-    addRequest(user.email, {
-      id: genId(),
-      date: new Date().toISOString(),
-      status: '배송준비중',
-      recipientName, recipientPhone, zonecode, address, addressDetail
-    });
-
-    window.location.href = 'mypage.html?request=success';
   });
 });
-
 </script>
 </body>
 </html>

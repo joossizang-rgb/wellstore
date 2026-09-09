@@ -272,6 +272,12 @@ h2.section-title {
   .feature-row { grid-template-columns: 1fr; }
   .feature-item { border-left: none; padding-left: 0; }
 }
+.feature-row-5 { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 860px) {
+  .feature-row-5 { grid-template-columns: 1fr 1fr; }
+  .feature-row-5 .feature-item:nth-child(3), .feature-row-5 .feature-item:nth-child(5) { border-left: none; padding-left: 0; }
+}
+@media (max-width: 520px) { .feature-row-5 { grid-template-columns: 1fr; } }
 
 /* ---------------------------------- Two column content ---------------------------------- */
 .split {
@@ -314,6 +320,8 @@ h2.section-title {
   .steps { grid-template-columns: 1fr; gap: 32px; }
   .steps::before { display: none; }
 }
+.steps-5 { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 860px) { .steps-5 { grid-template-columns: 1fr; } }
 
 /* ---------------------------------- Report showcase (dark, the one bold moment) ---------------------------------- */
 .showcase {
@@ -344,6 +352,29 @@ h2.section-title {
 .notice-box .icon svg { width: 20px; height: 20px; }
 .notice-box p { font-size: .92rem; color: var(--text-secondary); line-height: 1.65; margin: 0; }
 .notice-box strong { color: var(--text); font-weight: 700; }
+
+/* ---------------------------------- Admin ---------------------------------- */
+.admin-topbar { background: var(--bg-dark); padding: 18px 0; }
+.admin-topbar-inner { max-width: var(--max); margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+.admin-logo { color: #fff; font-weight: 800; font-size: 1.1rem; }
+.admin-tag { background: var(--red); color: #fff; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: var(--r-full); margin-left: 8px; vertical-align: middle; }
+.admin-topbar .btn-ghost { background: var(--bg-dark-raised); color: #fff; }
+.admin-topbar .btn-ghost:hover { background: #3a3a3d; }
+
+.admin-shell { max-width: 980px; margin: 0 auto; padding: 48px 24px 100px; }
+.admin-shell h1 { font-size: 1.6rem; margin-bottom: 6px; }
+.admin-shell > p.sub { color: var(--text-secondary); margin-bottom: 40px; }
+.admin-section { margin-bottom: 48px; }
+.admin-section h2 { font-size: 1.15rem; margin-bottom: 18px; }
+.admin-empty { text-align: center; padding: 44px; color: var(--text-tertiary); border: 1px dashed var(--border); border-radius: var(--r-md); font-size: .92rem; }
+
+.admin-table select { border: 1px solid var(--border); border-radius: var(--r-sm); padding: 7px 8px; font-size: .85rem; background: #fff; }
+.admin-row-form { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--r-md); padding: 26px; margin-top: 16px; }
+.admin-row-form h3 { font-size: 1.02rem; margin-bottom: 4px; }
+.admin-row-form .sub { color: var(--text-secondary); font-size: .88rem; margin-bottom: 20px; }
+.admin-preview { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border-light); border-radius: var(--r-full); padding: 9px 18px; font-weight: 700; color: var(--red); margin-top: 4px; font-size: .95rem; }
+.admin-field-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: end; }
+@media (max-width: 600px) { .admin-field-row { grid-template-columns: 1fr; } }
 
 @media (max-width: 860px) {
   .showcase { grid-template-columns: 1fr; gap: 40px; }
@@ -673,7 +704,23 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
   <!-- What is NAD -->
   <section class="container" style="max-width:720px; padding-bottom:56px;">
     <p style="font-size:1.08rem; color:var(--text); margin-bottom:24px;">NAD+(Nicotinamide Adenine Dinucleotide)는 우리 몸의 거의 모든 세포에 존재하는 조효소예요. 음식으로부터 얻은 에너지를 세포가 사용할 수 있는 형태로 바꾸는 대사 과정에서 핵심적인 역할을 하고, 세포의 회복과 유지에 관여하는 여러 단백질의 작용에도 필요한 물질로 알려져 있어요.</p>
-    <p style="font-size:1.08rem; color:var(--text);">여러 연구에 따르면 체내 NAD+ 수준은 나이가 들면서 자연스럽게 감소하는 경향이 있다고 보고돼요. 수면 부족이나 불규칙한 생활습관, 스트레스 같은 요인도 영향을 줄 수 있다고 알려져 있어요. 그래서 활력과 회복력, 컨디션 관리에 관심이 있는 분들 사이에서 참고 지표로 주목받고 있어요.</p>
+    <p style="font-size:1.08rem; color:var(--text); margin-bottom:24px;">1906년에 처음 발견된 이후 한동안 잠잠하다가, 최근 들어 노화와 세포 건강 연구에서 다시 활발하게 다뤄지고 있는 물질이에요. 세포 안에서도 세포질, 미토콘드리아, 핵 등 여러 구획에 나뉘어 존재하고, 각 구획의 NAD+ 농도는 서로 어느 정도 독립적으로 조절된다고 알려져 있어요.</p>
+    <p style="font-size:1.08rem; color:var(--text); margin-bottom:24px;">NAD+는 우리 몸에서 300개가 넘는 효소의 작용에 관여하는 것으로 알려져 있어요. 세포 에너지를 만드는 대사 과정과 DNA 손상을 복구해 유전체를 안정적으로 유지하는 과정, 세포 내 노폐물을 재활용하는 과정에 두루 쓰이는데, 그중에서도 '시르투인(sirtuin)'이라는 단백질군은 NAD+를 이용해 DNA 복구와 대사를 조절하는 것으로 알려져 있어 노화 연구에서 특히 주목받고 있어요.</p>
+    <p style="font-size:1.08rem; color:var(--text); margin-bottom:24px;">여러 연구에 따르면 체내 NAD+ 수준은 나이가 들면서 자연스럽게 감소하는 경향이 있다고 보고돼요. 이런 감소는 세포 노화, 미토콘드리아 기능 저하, DNA 손상 축적 같은 노화의 여러 특징과 함께 나타난다고 알려져 있어요. 다만 NAD+ 감소가 특정 질환을 직접 유발한다고 단정할 수는 없고, 아직 활발히 연구가 진행되고 있는 분야예요. 수면 부족이나 불규칙한 생활습관, 스트레스 같은 요인도 영향을 줄 수 있다고 알려져 있어요.</p>
+    <p style="font-size:1.08rem; color:var(--text);">우리 몸은 트립토판이나 니코틴산 같은 성분으로 NAD+를 직접 만들기도 하고, 니코틴아마이드(NAM)를 재활용해 NAD+로 되돌리기도 해요. NMN이나 NR 같은 성분이 이 재활용 경로에 쓰인다고 알려지면서 관련 보충제에 대한 관심도 늘고 있어요. 이런 시도가 실제로 내 몸의 NAD+ 수치에 어떤 변화를 가져왔는지 궁금하다면, 검사를 통해 수치로 확인해보는 것도 방법이에요.</p>
+
+    <div class="notice-box" style="margin-top:32px;">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M11 12h1v5h1"/></svg></span>
+      <div>
+        <p style="margin-bottom:10px;"><strong>참고 자료</strong></p>
+        <p style="font-size:.85rem; line-height:1.8;">
+          What is NAD⁺?, nad.com<br>
+          Amjad S, et al. Role of NAD+ in regulating cellular and metabolic signaling pathways. <i>Mol Metab.</i> 2021.<br>
+          Covarrubias AJ, et al. NAD+ metabolism and its roles in cellular processes during ageing. <i>Nat Rev Mol Cell Biol.</i> 2021.<br>
+          Rajman L, et al. Therapeutic Potential of NAD-Boosting Molecules: The In Vivo Evidence. <i>Cell Metab.</i> 2018.
+        </p>
+      </div>
+    </div>
   </section>
 
   <!-- Who should test -->
@@ -716,7 +763,7 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
         <h2 class="section-title">키트 구성품</h2>
         <p class="section-desc">필요한 모든 것이 하나의 키트 안에 들어있어요.</p>
       </div>
-      <div class="feature-row">
+      <div class="feature-row feature-row-5">
         <div class="feature-item">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C12 2 5 10.5 5 15a7 7 0 0 0 14 0c0-4.5-7-13-7-13z"/></svg></div>
           <h3>채혈용 랜싯 2개</h3>
@@ -733,6 +780,11 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
           <p>여과지 소재의 채혈 카드에 혈액을 채취해요.</p>
         </div>
         <div class="feature-item">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M10 6v4l-3 8a2 2 0 0 0 2 3h6a2 2 0 0 0 2-3l-3-8V6"/></svg></div>
+          <h3>안정액</h3>
+          <p>채취한 혈액 위에 떨어뜨려 NAD+가 분해되지 않도록 보존해요.</p>
+        </div>
+        <div class="feature-item">
           <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div>
           <h3>회송 봉투 · 설명서</h3>
           <p>사용 설명서와 반송용 봉투가 함께 들어있어요.</p>
@@ -747,7 +799,7 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
       <div class="section-head">
         <h2 class="section-title">검사 진행 순서</h2>
       </div>
-      <div class="steps">
+      <div class="steps steps-5">
         <div class="step">
           <div class="num">1</div>
           <h3>손 소독 후 채혈</h3>
@@ -760,11 +812,16 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
         </div>
         <div class="step">
           <div class="num">3</div>
+          <h3>안정액 한 방울 추가</h3>
+          <p>동봉된 안정액을 혈액 위에 한 방울 떨어뜨려요. NAD+가 분해되지 않도록 보존해주는 과정이에요.</p>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
           <h3>실온 건조</h3>
           <p>통풍이 잘 되는 곳에서 약 1~2시간 건조해요.</p>
         </div>
         <div class="step">
-          <div class="num">4</div>
+          <div class="num">5</div>
           <h3>회송봉투로 발송</h3>
           <p>동봉된 봉투에 밀봉하여 우체통에 넣어주세요.</p>
         </div>
@@ -782,6 +839,10 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
         <div class="faq-item">
           <button type="button" class="faq-question">채혈량은 어느 정도인가요?<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M6 9l6 6 6-6"/></svg></span></button>
           <div class="faq-answer"><p>카드의 원 안을 채울 정도의 소량이면 충분해요. 일반적인 정맥채혈보다 훨씬 적은 양이에요.</p></div>
+        </div>
+        <div class="faq-item">
+          <button type="button" class="faq-question">안정액은 왜 필요한가요?<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <div class="faq-answer"><p>NAD+는 시간이 지나면 쉽게 분해되는 성질이 있어요. 채취한 혈액 위에 동봉된 안정액을 바로 떨어뜨리면 반송 중에도 성분이 보존되어 정확한 측정이 가능해요.</p></div>
         </div>
         <div class="faq-item">
           <button type="button" class="faq-question">검사는 누가 분석하나요?<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M6 9l6 6 6-6"/></svg></span></button>
@@ -991,6 +1052,65 @@ function execDaumPostcode() {
       document.getElementById('addressDetail').focus();
     }
   }).open();
+}
+
+/* ---------- 신청 상태 업데이트 (관리자용) ---------- */
+function updateRequestStatus(email, requestId, newStatus) {
+  const list = getRequests(email);
+  const idx = list.findIndex(r => r.id === requestId);
+  if (idx === -1) return false;
+  list[idx].status = newStatus;
+  localStorage.setItem(DB_PREFIX + 'requests_' + email, JSON.stringify(list));
+  return true;
+}
+
+/* ---------- 검사 리포트 저장/조회 ---------- */
+function saveReport(email, requestId, reportData) {
+  const reports = JSON.parse(localStorage.getItem(DB_PREFIX + 'reports_' + email) || '{}');
+  reports[requestId] = reportData;
+  localStorage.setItem(DB_PREFIX + 'reports_' + email, JSON.stringify(reports));
+}
+function getReport(email, requestId) {
+  const reports = JSON.parse(localStorage.getItem(DB_PREFIX + 'reports_' + email) || '{}');
+  return reports[requestId] || null;
+}
+
+/* ---------- NAD+ 참고 분포 및 퍼센타일 계산 ----------
+   주의: 아래 평균(mean)/표준편차(sd)는 실제 임상 데이터가 아닌 예시 값이에요.
+   실제 서비스에서는 공개된 연구 자료의 참고범위로 시작해서,
+   자체 검사 데이터가 쌓이면 실제 분포로 점차 교체하는 걸 추천드려요. */
+const NAD_REFERENCE = {
+  '20대 미만': { mean: 45, sd: 9 },
+  '20대': { mean: 42, sd: 8 },
+  '30대': { mean: 38, sd: 8 },
+  '40대': { mean: 34, sd: 8 },
+  '50대': { mean: 30, sd: 7 },
+  '60대': { mean: 27, sd: 7 },
+  '70대 이상': { mean: 24, sd: 7 }
+};
+function normalCDF(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  if (z > 0) prob = 1 - prob;
+  return prob;
+}
+function calculatePercentileTop(value, ageGroup) {
+  const ref = NAD_REFERENCE[ageGroup] || NAD_REFERENCE['30대'];
+  const z = (value - ref.mean) / ref.sd;
+  const cdf = normalCDF(z);
+  const topPercent = Math.round((1 - cdf) * 100);
+  return Math.max(1, Math.min(99, topPercent));
+}
+
+/* ---------- 관리자 인증 (데모용 하드코딩 — 실서비스에는 반드시 서버 인증 필요) ---------- */
+const ADMIN_CREDENTIALS = { email: 'admin@wellscore.example', password: 'admin1234' };
+function getAdminSession() {
+  return localStorage.getItem(DB_PREFIX + 'admin_session') === 'true';
+}
+function setAdminSession(on) {
+  if (on) localStorage.setItem(DB_PREFIX + 'admin_session', 'true');
+  else localStorage.removeItem(DB_PREFIX + 'admin_session');
 }
 
 /* ---------- 나이대 계산 (생년월일 기반) ---------- */

@@ -271,6 +271,12 @@ h2.section-title {
   .feature-row { grid-template-columns: 1fr; }
   .feature-item { border-left: none; padding-left: 0; }
 }
+.feature-row-5 { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 860px) {
+  .feature-row-5 { grid-template-columns: 1fr 1fr; }
+  .feature-row-5 .feature-item:nth-child(3), .feature-row-5 .feature-item:nth-child(5) { border-left: none; padding-left: 0; }
+}
+@media (max-width: 520px) { .feature-row-5 { grid-template-columns: 1fr; } }
 
 /* ---------------------------------- Two column content ---------------------------------- */
 .split {
@@ -313,6 +319,8 @@ h2.section-title {
   .steps { grid-template-columns: 1fr; gap: 32px; }
   .steps::before { display: none; }
 }
+.steps-5 { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 860px) { .steps-5 { grid-template-columns: 1fr; } }
 
 /* ---------------------------------- Report showcase (dark, the one bold moment) ---------------------------------- */
 .showcase {
@@ -343,6 +351,29 @@ h2.section-title {
 .notice-box .icon svg { width: 20px; height: 20px; }
 .notice-box p { font-size: .92rem; color: var(--text-secondary); line-height: 1.65; margin: 0; }
 .notice-box strong { color: var(--text); font-weight: 700; }
+
+/* ---------------------------------- Admin ---------------------------------- */
+.admin-topbar { background: var(--bg-dark); padding: 18px 0; }
+.admin-topbar-inner { max-width: var(--max); margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+.admin-logo { color: #fff; font-weight: 800; font-size: 1.1rem; }
+.admin-tag { background: var(--red); color: #fff; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: var(--r-full); margin-left: 8px; vertical-align: middle; }
+.admin-topbar .btn-ghost { background: var(--bg-dark-raised); color: #fff; }
+.admin-topbar .btn-ghost:hover { background: #3a3a3d; }
+
+.admin-shell { max-width: 980px; margin: 0 auto; padding: 48px 24px 100px; }
+.admin-shell h1 { font-size: 1.6rem; margin-bottom: 6px; }
+.admin-shell > p.sub { color: var(--text-secondary); margin-bottom: 40px; }
+.admin-section { margin-bottom: 48px; }
+.admin-section h2 { font-size: 1.15rem; margin-bottom: 18px; }
+.admin-empty { text-align: center; padding: 44px; color: var(--text-tertiary); border: 1px dashed var(--border); border-radius: var(--r-md); font-size: .92rem; }
+
+.admin-table select { border: 1px solid var(--border); border-radius: var(--r-sm); padding: 7px 8px; font-size: .85rem; background: #fff; }
+.admin-row-form { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--r-md); padding: 26px; margin-top: 16px; }
+.admin-row-form h3 { font-size: 1.02rem; margin-bottom: 4px; }
+.admin-row-form .sub { color: var(--text-secondary); font-size: .88rem; margin-bottom: 20px; }
+.admin-preview { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border-light); border-radius: var(--r-full); padding: 9px 18px; font-weight: 700; color: var(--red); margin-top: 4px; font-size: .95rem; }
+.admin-field-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: end; }
+@media (max-width: 600px) { .admin-field-row { grid-template-columns: 1fr; } }
 
 @media (max-width: 860px) {
   .showcase { grid-template-columns: 1fr; gap: 40px; }
@@ -879,6 +910,65 @@ function execDaumPostcode() {
   }).open();
 }
 
+/* ---------- 신청 상태 업데이트 (관리자용) ---------- */
+function updateRequestStatus(email, requestId, newStatus) {
+  const list = getRequests(email);
+  const idx = list.findIndex(r => r.id === requestId);
+  if (idx === -1) return false;
+  list[idx].status = newStatus;
+  localStorage.setItem(DB_PREFIX + 'requests_' + email, JSON.stringify(list));
+  return true;
+}
+
+/* ---------- 검사 리포트 저장/조회 ---------- */
+function saveReport(email, requestId, reportData) {
+  const reports = JSON.parse(localStorage.getItem(DB_PREFIX + 'reports_' + email) || '{}');
+  reports[requestId] = reportData;
+  localStorage.setItem(DB_PREFIX + 'reports_' + email, JSON.stringify(reports));
+}
+function getReport(email, requestId) {
+  const reports = JSON.parse(localStorage.getItem(DB_PREFIX + 'reports_' + email) || '{}');
+  return reports[requestId] || null;
+}
+
+/* ---------- NAD+ 참고 분포 및 퍼센타일 계산 ----------
+   주의: 아래 평균(mean)/표준편차(sd)는 실제 임상 데이터가 아닌 예시 값이에요.
+   실제 서비스에서는 공개된 연구 자료의 참고범위로 시작해서,
+   자체 검사 데이터가 쌓이면 실제 분포로 점차 교체하는 걸 추천드려요. */
+const NAD_REFERENCE = {
+  '20대 미만': { mean: 45, sd: 9 },
+  '20대': { mean: 42, sd: 8 },
+  '30대': { mean: 38, sd: 8 },
+  '40대': { mean: 34, sd: 8 },
+  '50대': { mean: 30, sd: 7 },
+  '60대': { mean: 27, sd: 7 },
+  '70대 이상': { mean: 24, sd: 7 }
+};
+function normalCDF(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  if (z > 0) prob = 1 - prob;
+  return prob;
+}
+function calculatePercentileTop(value, ageGroup) {
+  const ref = NAD_REFERENCE[ageGroup] || NAD_REFERENCE['30대'];
+  const z = (value - ref.mean) / ref.sd;
+  const cdf = normalCDF(z);
+  const topPercent = Math.round((1 - cdf) * 100);
+  return Math.max(1, Math.min(99, topPercent));
+}
+
+/* ---------- 관리자 인증 (데모용 하드코딩 — 실서비스에는 반드시 서버 인증 필요) ---------- */
+const ADMIN_CREDENTIALS = { email: 'admin@wellscore.example', password: 'admin1234' };
+function getAdminSession() {
+  return localStorage.getItem(DB_PREFIX + 'admin_session') === 'true';
+}
+function setAdminSession(on) {
+  if (on) localStorage.setItem(DB_PREFIX + 'admin_session', 'true');
+  else localStorage.removeItem(DB_PREFIX + 'admin_session');
+}
+
 /* ---------- 나이대 계산 (생년월일 기반) ---------- */
 function getAgeGroup(birthdateStr) {
   if (!birthdateStr) return '30대';
@@ -967,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${r.id}</td>
           <td>${formatDate(r.date)}</td>
           <td><span class="status-badge status-${statusToClass(r.status)}">${r.status}</span></td>
-          <td>${r.status === '완료' ? '<a href="report.html" class="link-arrow">리포트 보기</a>' : '-'}</td>
+          <td>${r.status === '완료' ? `<a href="report.html?id=${encodeURIComponent(r.id)}" class="link-arrow">리포트 보기</a>` : '-'}</td>
         </tr>`).join('')
     : `<tr><td colspan="4" class="empty-row">신청한 검사가 없어요. 보유한 검사권으로 키트를 신청해보세요.</td></tr>`;
 
