@@ -716,64 +716,135 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* =================================================================
-   main.js — 모든 페이지 공통 스크립트
-   - 로컬스토리지 기반 모의 DB (회원/검사권/구매/신청 내역)
-   - 네비게이션 로그인 상태 표시, 모바일 메뉴, FAQ 아코디언
-   주의: 실제 서비스 전환 시 아래 DB 함수들은 실서버 API 호출로 교체 필요
+   main.js — Supabase 연동 공통 스크립트
+   모든 페이지가 이 스크립트를 공유해요. 로그인 상태, 회원 정보,
+   검사권/구매/신청/리포트 조회는 전부 Supabase(Postgres + Auth)를
+   통해 이루어져요.
    ================================================================= */
 
-const DB_PREFIX = 'wellscore_';
+const SUPABASE_URL = 'https://mezymmondxgyffpzhfum.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_KoEuCz0bpo06Cgn0juXldg_6Smnyc5w';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-/* ---------- 회원 ---------- */
-function getUsers() {
-  return JSON.parse(localStorage.getItem(DB_PREFIX + 'users') || '[]');
-}
-function saveUsers(users) {
-  localStorage.setItem(DB_PREFIX + 'users', JSON.stringify(users));
-}
-function getSession() {
-  return localStorage.getItem(DB_PREFIX + 'session');
-}
-function setSession(email) {
-  localStorage.setItem(DB_PREFIX + 'session', email);
-}
-function clearSession() {
-  localStorage.removeItem(DB_PREFIX + 'session');
-}
-function getCurrentUser() {
-  const email = getSession();
-  if (!email) return null;
-  return getUsers().find(u => u.email === email) || null;
+/* ---------- 세션 / 회원 정보 ---------- */
+async function getCurrentUser() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return null;
+  const { data: profile, error } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
+  if (error || !profile) {
+    console.error('프로필 조회 실패:', error);
+    return null;
+  }
+  return Object.assign({}, profile, { email: session.user.email });
 }
 
-/* ---------- 검사권 ---------- */
-function getVouchers(email) {
-  return parseInt(localStorage.getItem(DB_PREFIX + 'vouchers_' + email) || '0', 10);
-}
-function setVouchers(email, count) {
-  localStorage.setItem(DB_PREFIX + 'vouchers_' + email, String(count));
+async function handleLogout() {
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
 }
 
 /* ---------- 구매 내역 ---------- */
-function getPurchases(email) {
-  return JSON.parse(localStorage.getItem(DB_PREFIX + 'purchases_' + email) || '[]');
-}
-function addPurchase(email, purchase) {
-  const list = getPurchases(email);
-  list.unshift(purchase);
-  localStorage.setItem(DB_PREFIX + 'purchases_' + email, JSON.stringify(list));
+async function getPurchases(userId) {
+  const { data, error } = await sb
+    .from('purchases')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data.map(p => ({ date: p.created_at, qty: p.qty, amount: p.amount }));
 }
 
-/* ---------- 키트 신청/검사 내역 ---------- */
-function getRequests(email) {
-  return JSON.parse(localStorage.getItem(DB_PREFIX + 'requests_' + email) || '[]');
+/* ---------- 검사 신청 내역 ---------- */
+async function getRequests(userId) {
+  const { data, error } = await sb
+    .from('requests')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data.map(r => ({
+    id: r.id, date: r.created_at, status: r.status,
+    recipientName: r.recipient_name, recipientPhone: r.recipient_phone,
+    zonecode: r.zonecode, address: r.address, addressDetail: r.address_detail
+  }));
 }
-function addRequest(email, req) {
-  const list = getRequests(email);
-  list.unshift(req);
-  localStorage.setItem(DB_PREFIX + 'requests_' + email, JSON.stringify(list));
+
+/* ---------- 검사 리포트 ---------- */
+async function getReport(requestId) {
+  const { data, error } = await sb
+    .from('reports')
+    .select('*')
+    .eq('request_id', requestId)
+    .maybeSingle();
+  if (error) { console.error(error); return null; }
+  if (!data) return null;
+  return { value: data.value, percentile: data.percentile, ageGroup: data.age_group, date: data.created_at };
+}
+
+/* ---------- 다음 우편번호 검색 (회원가입, 키트 신청에서 공통 사용) ---------- */
+function execDaumPostcode() {
+  if (typeof daum === 'undefined') {
+    alert('주소 검색 서비스를 불러오지 못했어요. 네트워크 연결을 확인해주세요.');
+    return;
+  }
+  new daum.Postcode({
+    oncomplete: function (data) {
+      document.getElementById('zonecode').value = data.zonecode;
+      document.getElementById('address').value = data.roadAddress || data.jibunAddress;
+      document.getElementById('addressDetail').focus();
+    }
+  }).open();
+}
+
+/* ---------- 나이대 계산 (생년월일 기반) ---------- */
+function getAgeGroup(birthdateStr) {
+  if (!birthdateStr) return '30대';
+  const birth = new Date(birthdateStr);
+  if (isNaN(birth.getTime())) return '30대';
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  let decade = Math.floor(age / 10) * 10;
+  if (decade < 20) return '20대 미만';
+  if (decade >= 70) return '70대 이상';
+  return decade + '대';
+}
+
+/* ---------- NAD+ 참고 분포 및 퍼센타일 계산 ----------
+   주의: 아래 평균(mean)/표준편차(sd)는 실제 임상 데이터가 아닌 예시 값이에요.
+   실제 서비스에서는 공개된 연구 자료의 참고범위로 시작해서,
+   자체 검사 데이터가 쌓이면 실제 분포로 점차 교체하는 걸 추천드려요. */
+const NAD_REFERENCE = {
+  '20대 미만': { mean: 45, sd: 9 },
+  '20대': { mean: 42, sd: 8 },
+  '30대': { mean: 38, sd: 8 },
+  '40대': { mean: 34, sd: 8 },
+  '50대': { mean: 30, sd: 7 },
+  '60대': { mean: 27, sd: 7 },
+  '70대 이상': { mean: 24, sd: 7 }
+};
+function normalCDF(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  if (z > 0) prob = 1 - prob;
+  return prob;
+}
+function calculatePercentileTop(value, ageGroup) {
+  const ref = NAD_REFERENCE[ageGroup] || NAD_REFERENCE['30대'];
+  const z = (value - ref.mean) / ref.sd;
+  const cdf = normalCDF(z);
+  const topPercent = Math.round((1 - cdf) * 100);
+  return Math.max(1, Math.min(99, topPercent));
 }
 
 /* ---------- 유틸 ---------- */
@@ -784,22 +855,15 @@ function formatDate(iso) {
 function genId() {
   return 'NAD' + Date.now().toString(36).toUpperCase();
 }
-function daysAgoISO(days) {
-  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-}
 
 /* ---------- 네비게이션 로그인 상태 ---------- */
-function renderNavAuth() {
-  const user = getCurrentUser();
+async function renderNavAuth() {
+  const user = await getCurrentUser();
   const targets = [document.getElementById('navAuth'), document.getElementById('navAuthMobile')];
   const html = user
     ? `<a href="mypage.html" class="btn btn-ghost btn-sm">마이페이지</a><button type="button" class="btn btn-outline btn-sm" onclick="handleLogout()">로그아웃</button>`
     : `<a href="login.html" class="nav-link-plain">로그인</a><a href="signup.html" class="btn btn-dark btn-sm">회원가입</a>`;
   targets.forEach(el => { if (el) el.innerHTML = html; });
-}
-function handleLogout() {
-  clearSession();
-  window.location.href = 'index.html';
 }
 
 /* ---------- 모바일 메뉴 ---------- */
@@ -848,122 +912,6 @@ function showToast(msg) {
   textEl.textContent = msg;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3800);
-}
-
-
-/* ---------- 다음 우편번호 검색 (회원가입, 키트 신청에서 공통 사용) ---------- */
-function execDaumPostcode() {
-  if (typeof daum === 'undefined') {
-    alert('주소 검색 서비스를 불러오지 못했어요. 네트워크 연결을 확인해주세요.');
-    return;
-  }
-  new daum.Postcode({
-    oncomplete: function (data) {
-      document.getElementById('zonecode').value = data.zonecode;
-      document.getElementById('address').value = data.roadAddress || data.jibunAddress;
-      document.getElementById('addressDetail').focus();
-    }
-  }).open();
-}
-
-/* ---------- 신청 상태 업데이트 (관리자용) ---------- */
-function updateRequestStatus(email, requestId, newStatus) {
-  const list = getRequests(email);
-  const idx = list.findIndex(r => r.id === requestId);
-  if (idx === -1) return false;
-  list[idx].status = newStatus;
-  localStorage.setItem(DB_PREFIX + 'requests_' + email, JSON.stringify(list));
-  return true;
-}
-
-/* ---------- 검사 리포트 저장/조회 ---------- */
-function saveReport(email, requestId, reportData) {
-  const reports = JSON.parse(localStorage.getItem(DB_PREFIX + 'reports_' + email) || '{}');
-  reports[requestId] = reportData;
-  localStorage.setItem(DB_PREFIX + 'reports_' + email, JSON.stringify(reports));
-}
-function getReport(email, requestId) {
-  const reports = JSON.parse(localStorage.getItem(DB_PREFIX + 'reports_' + email) || '{}');
-  return reports[requestId] || null;
-}
-
-/* ---------- NAD+ 참고 분포 및 퍼센타일 계산 ----------
-   주의: 아래 평균(mean)/표준편차(sd)는 실제 임상 데이터가 아닌 예시 값이에요.
-   실제 서비스에서는 공개된 연구 자료의 참고범위로 시작해서,
-   자체 검사 데이터가 쌓이면 실제 분포로 점차 교체하는 걸 추천드려요. */
-const NAD_REFERENCE = {
-  '20대 미만': { mean: 45, sd: 9 },
-  '20대': { mean: 42, sd: 8 },
-  '30대': { mean: 38, sd: 8 },
-  '40대': { mean: 34, sd: 8 },
-  '50대': { mean: 30, sd: 7 },
-  '60대': { mean: 27, sd: 7 },
-  '70대 이상': { mean: 24, sd: 7 }
-};
-function normalCDF(z) {
-  const t = 1 / (1 + 0.2316419 * Math.abs(z));
-  const d = 0.3989423 * Math.exp(-z * z / 2);
-  let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-  if (z > 0) prob = 1 - prob;
-  return prob;
-}
-function calculatePercentileTop(value, ageGroup) {
-  const ref = NAD_REFERENCE[ageGroup] || NAD_REFERENCE['30대'];
-  const z = (value - ref.mean) / ref.sd;
-  const cdf = normalCDF(z);
-  const topPercent = Math.round((1 - cdf) * 100);
-  return Math.max(1, Math.min(99, topPercent));
-}
-
-/* ---------- 관리자 인증 (데모용 하드코딩 — 실서비스에는 반드시 서버 인증 필요) ---------- */
-const ADMIN_CREDENTIALS = { email: 'admin@wellscore.example', password: 'admin1234' };
-function getAdminSession() {
-  return localStorage.getItem(DB_PREFIX + 'admin_session') === 'true';
-}
-function setAdminSession(on) {
-  if (on) localStorage.setItem(DB_PREFIX + 'admin_session', 'true');
-  else localStorage.removeItem(DB_PREFIX + 'admin_session');
-}
-
-/* ---------- 나이대 계산 (생년월일 기반) ---------- */
-function getAgeGroup(birthdateStr) {
-  if (!birthdateStr) return '30대';
-  const birth = new Date(birthdateStr);
-  if (isNaN(birth.getTime())) return '30대';
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  let decade = Math.floor(age / 10) * 10;
-  if (decade < 20) return '20대 미만';
-  if (decade >= 70) return '70대 이상';
-  return decade + '대';
-}
-
-/* ---------- 데모 계정으로 빠르게 둘러보기 ---------- */
-function quickDemoLogin() {
-  const demoEmail = 'demo@wellscore.example';
-  const users = getUsers();
-  let demoUser = users.find(u => u.email === demoEmail);
-  if (!demoUser) {
-    demoUser = {
-      name: '데모', email: demoEmail, phone: '010-0000-0000',
-      birthdate: '1993-05-14', gender: '여성',
-      zonecode: '06236', address: '서울특별시 강남구 테헤란로 123', addressDetail: '4층',
-      password: 'demo1234', createdAt: new Date().toISOString()
-    };
-    users.push(demoUser);
-    saveUsers(users);
-    setVouchers(demoEmail, 1);
-    addPurchase(demoEmail, { id: genId(), date: daysAgoISO(30), qty: 1, amount: 30000 });
-    addRequest(demoEmail, {
-      id: genId(), date: daysAgoISO(20), status: '완료',
-      recipientName: '데모', recipientPhone: '010-0000-0000',
-      zonecode: '06236', address: '서울특별시 강남구 테헤란로 123', addressDetail: '4층'
-    });
-  }
-  setSession(demoEmail);
-  window.location.href = 'mypage.html';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
