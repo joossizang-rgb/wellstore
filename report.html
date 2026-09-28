@@ -707,6 +707,13 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
 <main>
   <div class="container report-shell">
 
+    <div class="report-panel" id="reportNotFound" style="display:none; text-align:center; margin:40px 0 80px;">
+      <h2 style="margin-bottom:12px;">리포트를 찾을 수 없어요</h2>
+      <p class="interp-text" id="reportNotFoundText">아직 결과가 등록되지 않았거나, 본인의 리포트가 아니에요.</p>
+      <div style="margin-top:24px;"><a href="mypage.html" class="btn btn-primary">마이페이지로 이동</a></div>
+    </div>
+    <div id="reportBody">
+
     <div class="report-top">
       <h1><span id="reportUserName">회원</span>님의 NAD+ 검사 결과</h1>
       <span class="badge-sample" id="reportBadge">예시 리포트</span>
@@ -714,8 +721,8 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
 
     <div class="report-meta">
       <div>검사 항목<b>NAD+ (총 NAD)</b></div>
-      <div>키트 수령일<b>2026.08.10</b></div>
-      <div>검사기관 도착일<b>2026.08.14</b></div>
+      <div>키트 신청일<b id="reportRequestDate">2026.08.10</b></div>
+      <div id="reportShippedWrap">키트 발송일<b id="reportShippedDate">2026.08.14</b></div>
       <div>결과 확인일<b id="reportResultDate">2026.08.20</b></div>
     </div>
 
@@ -750,7 +757,7 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
 
     <div class="report-panel" style="margin-bottom:64px;">
       <h2>꾸준한 관리, 눈에 보이는 변화</h2>
-      <div class="trend-chart-wrap">
+      <div class="trend-chart-wrap" id="trendContainer">
         <svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg">
           <line x1="40" y1="140" x2="380" y2="140" stroke="#e8e8ed" stroke-width="1"/>
           <polyline points="70,99 205,78 340,64" fill="none" stroke="#e8384f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -765,7 +772,7 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
           <text x="340" y="160" font-size="12" fill="#1d1d1f" text-anchor="middle" font-weight="700">3차(이번)</text>
         </svg>
       </div>
-      <p class="trend-note">* 예시 이미지예요. 정기적으로 검사할수록 동년배 대비 나의 상대적 위치 변화를 확인할 수 있어요.</p>
+      <p class="trend-note" id="trendNote">* 예시 이미지예요. 정기적으로 검사할수록 동년배 대비 나의 상대적 위치 변화를 확인할 수 있어요.</p>
     </div>
 
     <div class="section-head">
@@ -794,13 +801,14 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
       <a href="store.html" class="btn btn-primary btn-lg">검사 키트 구매하기</a>
     </div>
 
+    </div><!-- /reportBody -->
   </div>
 </main>
 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-bottom" style="border-top:none; padding-top:0;">
-      <p class="footer-disclaimer">본 리포트는 예시 화면이며 실제 검사 결과가 아니에요. 본 서비스는 비의료 건강관리 서비스로, 질병을 진단·예방·치료하기 위한 의료행위가 아닙니다. 검사 결과는 웰니스 정보 제공을 목적으로 하며, 건강에 관한 우려가 있으신 경우 반드시 의료 전문가와 상담해주세요.</p>
+      <p class="footer-disclaimer"><span id="sampleDisclaimer">본 리포트는 예시 화면이며 실제 검사 결과가 아니에요. </span>본 서비스는 비의료 건강관리 서비스로, 질병을 진단·예방·치료하기 위한 의료행위가 아닙니다. 검사 결과는 웰니스 정보 제공을 목적으로 하며, 건강에 관한 우려가 있으신 경우 반드시 의료 전문가와 상담해주세요.</p>
       <p class="footer-copy">© 2026 Wellscore. All rights reserved.</p>
     </div>
   </div>
@@ -876,7 +884,7 @@ async function getReport(requestId) {
     .maybeSingle();
   if (error) { console.error(error); return null; }
   if (!data) return null;
-  return { value: data.value, percentile: data.percentile, ageGroup: data.age_group, date: data.created_at };
+  return { value: data.value, percentile: data.percentile, ageGroup: data.age_group, date: data.created_at, userId: data.user_id };
 }
 
 /* ---------- 다음 우편번호 검색 (회원가입, 키트 신청에서 공통 사용) ---------- */
@@ -1059,33 +1067,117 @@ document.addEventListener('DOMContentLoaded', () => {
     </svg>`;
   }
 
+  /* ---------- 정기검사 추이 그래프 (실제 리포트 기반) ---------- */
+  function buildTrendSVG(items, currentId) {
+    // items: [{ id, percentile, date }] 오래된 순
+    const W = 400, H = 170, left = 40, right = 380, top = 40, base = 140;
+    const n = items.length;
+    const xs = items.map((_, i) => n === 1 ? (left + right) / 2 : left + 30 + i * ((right - left - 60) / (n - 1)));
+    // 상위 % 가 낮을수록(좋을수록) 위로 — 1%면 top, 99%면 base
+    const ys = items.map(it => top + (it.percentile - 1) / 98 * (base - top - 20));
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      <line x1="${left}" y1="${base}" x2="${right}" y2="${base}" stroke="#e8e8ed" stroke-width="1"/>`;
+    if (n > 1) {
+      svg += `<polyline points="${xs.map((x, i) => x.toFixed(1) + ',' + ys[i].toFixed(1)).join(' ')}" fill="none" stroke="#e8384f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+    items.forEach((it, i) => {
+      const cur = it.id === currentId;
+      const x = xs[i].toFixed(1), y = ys[i].toFixed(1);
+      svg += cur
+        ? `<circle cx="${x}" cy="${y}" r="6.5" fill="#e8384f" stroke="#fdeced" stroke-width="4"/>`
+        : `<circle cx="${x}" cy="${y}" r="5" fill="#e8384f"/>`;
+      svg += `<text x="${x}" y="${(ys[i] - 11).toFixed(1)}" font-size="12" fill="${cur ? '#1d1d1f' : '#6e6e73'}" text-anchor="middle"${cur ? ' font-weight="700"' : ''}>상위 ${it.percentile}%</text>`;
+      svg += `<text x="${x}" y="${base + 16}" font-size="12" fill="${cur ? '#1d1d1f' : '#6e6e73'}" text-anchor="middle"${cur ? ' font-weight="700"' : ''}>${i + 1}차${cur ? '(이번)' : ''}</text>`;
+      svg += `<text x="${x}" y="${base + 31}" font-size="10.5" fill="#86868b" text-anchor="middle">${formatDate(it.date)}</text>`;
+    });
+    return svg + '</svg>';
+  }
+
+  function showNotFound(msg) {
+    document.getElementById('reportBody').style.display = 'none';
+    document.getElementById('reportNotFound').style.display = 'block';
+    if (msg) document.getElementById('reportNotFoundText').textContent = msg;
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     const user = await getCurrentUser();
     const params = new URLSearchParams(window.location.search);
     const reportId = params.get('id');
-    const reportData = reportId ? await getReport(reportId) : null;
 
-    if (user) {
-      document.getElementById('reportUserName').textContent = user.name;
-      document.getElementById('reportUserName2').textContent = user.name;
+    // id 없이 들어오면 홈의 "샘플 리포트" — 예시 화면 그대로 유지
+    if (!reportId) {
+      if (user) {
+        document.getElementById('reportUserName').textContent = user.name;
+        document.getElementById('reportUserName2').textContent = user.name;
+      }
+      const ag = (user && user.birthdate) ? getAgeGroup(user.birthdate) : '30대';
+      document.getElementById('reportAgeGroupCaption').textContent = ag + ' 동년배 대비';
+      document.getElementById('reportAgeGroupText').textContent = ag;
+      document.getElementById('gaugeContainer').innerHTML = buildGaugeSVG(32);
+      return;
     }
 
-    const ageGroup = (reportData && reportData.ageGroup) || (user && user.birthdate ? getAgeGroup(user.birthdate) : '30대');
+    // id가 있으면 실제 리포트만 표시 — 없으면 예시값으로 대체하지 않음
+    if (!user) {
+      showNotFound('로그인 후 확인할 수 있어요. 로그인한 뒤 마이페이지에서 다시 열어주세요.');
+      return;
+    }
+    const reportData = await getReport(reportId);
+    if (!reportData) {
+      showNotFound();
+      return;
+    }
+
+    // 신청 정보 (키트 신청일 / 발송일)
+    const { data: reqRow } = await sb.from('requests')
+      .select('created_at, shipped_at').eq('id', reportId).maybeSingle();
+
+    // 본인 리포트 전체 (추이 그래프용)
+    const { data: allReports } = await sb.from('reports')
+      .select('request_id, percentile, created_at')
+      .eq('user_id', reportData.userId)
+      .order('created_at', { ascending: true });
+
+    // 이름 / 나이대 — 관리자가 고객 리포트를 열 때는 리포트 주인의 정보를 사용
+    let owner = user;
+    if (reportData.userId !== user.id) {
+      const { data: ownerRow } = await sb.from('profiles').select('name, birthdate').eq('id', reportData.userId).maybeSingle();
+      if (ownerRow) owner = ownerRow;
+    }
+    document.getElementById('reportUserName').textContent = owner.name;
+    document.getElementById('reportUserName2').textContent = owner.name;
+    const ageGroup = reportData.ageGroup || (owner.birthdate ? getAgeGroup(owner.birthdate) : '30대');
     document.getElementById('reportAgeGroupCaption').textContent = ageGroup + ' 동년배 대비';
     document.getElementById('reportAgeGroupText').textContent = ageGroup;
 
-    const value = reportData ? reportData.value : 38.4;
-    const topPercent = reportData ? reportData.percentile : 32;
-
+    // 수치 / 퍼센타일
+    const value = reportData.value;
+    const topPercent = reportData.percentile;
     document.getElementById('reportValueText').textContent = '측정값 ' + value + ' μM';
     document.getElementById('reportPctHeadline').textContent = '상위 ' + topPercent + '%';
     document.getElementById('reportInterpPct').textContent = '상위 ' + topPercent + '%';
     document.getElementById('gaugeContainer').innerHTML = buildGaugeSVG(topPercent);
 
-    if (reportData) {
-      document.getElementById('reportBadge').style.display = 'none';
-      if (reportData.date) document.getElementById('reportResultDate').textContent = formatDate(reportData.date);
+    // 실제 리포트 표시: 예시 배지/문구 제거, 날짜 교체
+    document.getElementById('reportBadge').style.display = 'none';
+    document.getElementById('sampleDisclaimer').style.display = 'none';
+    document.getElementById('reportResultDate').textContent = reportData.date ? formatDate(reportData.date) : '-';
+    document.getElementById('reportRequestDate').textContent = reqRow && reqRow.created_at ? formatDate(reqRow.created_at) : '-';
+    if (reqRow && reqRow.shipped_at) {
+      document.getElementById('reportShippedDate').textContent = formatDate(reqRow.shipped_at);
+    } else {
+      document.getElementById('reportShippedWrap').style.display = 'none';
     }
+
+    // 정기검사 추이
+    const trendItems = (allReports || []).map(r => ({ id: r.request_id, percentile: r.percentile, date: r.created_at }));
+    if (!trendItems.some(t => t.id === reportId)) {
+      trendItems.push({ id: reportId, percentile: topPercent, date: reportData.date });
+    }
+    document.getElementById('trendContainer').innerHTML = buildTrendSVG(trendItems, reportId);
+    document.getElementById('trendNote').textContent = trendItems.length > 1
+      ? '* 검사 시점별 동년배 대비 상대 위치예요. 참고 정보이며 건강 상태를 진단하는 지표가 아니에요.'
+      : '* 첫 검사 결과예요. 정기적으로 검사하면 동년배 대비 나의 상대적 위치 변화를 이곳에서 확인할 수 있어요.';
   });
 </script>
 </body>
