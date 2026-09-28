@@ -559,8 +559,44 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
 .status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: var(--r-full); }
 .status-pending { background: var(--amber-tint); color: var(--amber-dark); }
 .status-shipping { background: #e8f0fe; color: #1a56db; }
+.status-return-req { background: #fff4e0; color: #c8790a; }
+.status-return-ship { background: #eef2ff; color: #4338ca; }
 .status-testing { background: #f1e8fe; color: #6b21db; }
 .status-done { background: var(--green-tint); color: #1c8a3b; }
+
+/* Modals */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  z-index: 2000; display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none;
+  transition: opacity .2s ease;
+}
+.modal-backdrop.open { opacity: 1; pointer-events: auto; }
+.modal-card {
+  background: #fff; border-radius: var(--r-lg); width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto; padding: 36px 32px;
+  box-shadow: var(--shadow-lg); transform: translateY(12px) scale(.98);
+  transition: transform .2s var(--ease);
+}
+.modal-backdrop.open .modal-card { transform: translateY(0) scale(1); }
+.modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.modal-header h3 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+.modal-close { color: var(--text-tertiary); font-size: 1.5rem; line-height: 1; padding: 4px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; background: none; }
+.modal-close:hover { color: var(--text); }
+.modal-desc { font-size: .92rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; }
+.info-callout { background: var(--bg-soft); border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 22px; font-size: .88rem; color: var(--text-secondary); line-height: 1.6; }
+.info-callout strong { color: var(--text); }
+
+/* Danger Zone */
+.danger-zone { margin-top: 40px; padding: 24px; border: 1px dashed #fca5a5; border-radius: var(--r-md); background: #fffbfb; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.danger-zone h4 { font-size: 1rem; color: #b91c1c; margin-bottom: 4px; }
+.danger-zone p { font-size: .88rem; color: var(--text-secondary); max-width: 48ch; margin: 0; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-danger:disabled { opacity: .4; cursor: not-allowed; }
+.btn-outline-danger { background: transparent; color: #dc2626; border: 1.5px solid #fca5a5; }
+.btn-outline-danger:hover { background: #fef2f2; border-color: #dc2626; }
 
 /* Toast */
 .toast {
@@ -732,6 +768,10 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
             <span>검사권 추가 구매</span>
             <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 2C12 2 5 10.5 5 15a7 7 0 0 0 14 0c0-4.5-7-13-7-13z"/></svg></span>
           </a>
+          <a href="#profileSection" class="quick-link">
+            <span>내 정보 관리 (개인정보·배송지)</span>
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          </a>
           <a href="about-nad.html" class="quick-link">
             <span>NAD+ 검사 다시 알아보기</span>
             <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M9 2h6M10 2v6.5L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 8.5V2"/></svg></span>
@@ -749,7 +789,7 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>신청번호</th><th>신청일</th><th>상태</th><th>리포트</th></tr>
+            <tr><th>신청번호</th><th>신청일</th><th>진행 상태</th><th>배송 / 반송 정보</th><th>리포트 / 처리</th></tr>
           </thead>
           <tbody id="requestTableBody"></tbody>
         </table>
@@ -767,14 +807,186 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
         </table>
       </div>
     </div>
+
+    <div class="dash-section" id="profileSection">
+      <h2>내 정보 관리</h2>
+      <div class="panel" style="max-width: 680px;">
+        <form id="profileForm" novalidate>
+          <p class="form-section-label">기본 정보</p>
+          <div class="field">
+            <label for="profEmail">이메일</label>
+            <input type="email" id="profEmail" readonly style="background:var(--bg-soft);color:var(--text-secondary);cursor:not-allowed;">
+            <p class="field-hint">로그인 계정 이메일은 변경할 수 없어요.</p>
+          </div>
+          <div class="field">
+            <label for="profName">이름</label>
+            <input type="text" id="profName" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="profPhone">휴대폰 번호</label>
+            <input type="tel" id="profPhone" autocomplete="tel" placeholder="010-0000-0000" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="profBirthdate">생년월일</label>
+              <input type="date" id="profBirthdate" autocomplete="bday">
+            </div>
+            <div class="field">
+              <label>성별</label>
+              <div class="radio-row">
+                <label class="radio-option"><input type="radio" name="profGender" value="여성"> 여성</label>
+                <label class="radio-option"><input type="radio" name="profGender" value="남성"> 남성</label>
+              </div>
+            </div>
+          </div>
+
+          <p class="form-section-label">기본 배송지</p>
+          <div class="field">
+            <label for="profZonecode">우편번호</label>
+            <div class="field-with-btn">
+              <input type="text" id="profZonecode" readonly placeholder="우편번호 검색을 눌러주세요">
+              <button type="button" class="btn btn-outline" onclick="execProfilePostcode()">주소 검색</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="profAddress">기본 주소</label>
+            <input type="text" id="profAddress" readonly>
+          </div>
+          <div class="field">
+            <label for="profAddressDetail">상세 주소</label>
+            <input type="text" id="profAddressDetail" placeholder="동/호수 등 상세 주소를 입력해주세요">
+          </div>
+
+          <p class="form-section-label">비밀번호 변경 (선택)</p>
+          <div class="field">
+            <label for="profNewPassword">새 비밀번호</label>
+            <input type="password" id="profNewPassword" autocomplete="new-password" placeholder="변경할 경우에만 8자 이상 입력해주세요">
+          </div>
+          <div class="field">
+            <label for="profNewPasswordConfirm">새 비밀번호 확인</label>
+            <input type="password" id="profNewPasswordConfirm" autocomplete="new-password" placeholder="새 비밀번호를 한 번 더 입력해주세요">
+          </div>
+
+          <div class="form-error" id="profError"></div>
+
+          <button type="submit" class="btn btn-primary btn-lg" id="saveProfileBtn">회원 정보 저장</button>
+        </form>
+
+        <div class="danger-zone">
+          <div>
+            <h4>회원 탈퇴</h4>
+            <p>계정을 삭제하면 보유 검사권, 신청 내역, 검사 리포트 등 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.</p>
+          </div>
+          <button type="button" class="btn btn-outline-danger btn-sm" onclick="openDeleteAccountModal()">회원 탈퇴</button>
+        </div>
+      </div>
+    </div>
   </div>
 </main>
+
+<!-- 반송 신청 모달 -->
+<div class="modal-backdrop" id="returnKitModal" onclick="handleBackdropClick(event, 'returnKitModal')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>검사 키트 반송 신청</h3>
+      <button type="button" class="modal-close" onclick="closeModal('returnKitModal')">&times;</button>
+    </div>
+    <div class="info-callout">
+      <strong>📦 반송 전 꼭 확인해주세요</strong><br>
+      자가 채혈을 마친 <strong>DBS 카드</strong>를 동봉된 알루미늄 보호 파우치에 넣고 밀봉한 후, <strong>반송용 회송 봉투</strong>에 넣어주세요. 신청하시면 택배 기사님이 입력하신 수거지로 방문하여 안전하게 회수합니다.
+    </div>
+    <form id="returnKitForm" novalidate>
+      <input type="hidden" id="returnRequestId">
+      <div class="field">
+        <label for="returnName">보내시는 분 성함</label>
+        <input type="text" id="returnName" required>
+      </div>
+      <div class="field">
+        <label for="returnPhone">연락처</label>
+        <input type="tel" id="returnPhone" placeholder="010-0000-0000" required>
+      </div>
+      <div class="field">
+        <label for="returnZonecode">우편번호</label>
+        <div class="field-with-btn">
+          <input type="text" id="returnZonecode" readonly placeholder="우편번호 검색을 눌러주세요">
+          <button type="button" class="btn btn-outline" onclick="execReturnPostcode()">주소 검색</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="returnAddress">수거지 주소</label>
+        <input type="text" id="returnAddress" readonly>
+      </div>
+      <div class="field">
+        <label for="returnAddressDetail">상세 주소</label>
+        <input type="text" id="returnAddressDetail" placeholder="동/호수 등 상세 주소">
+      </div>
+      <div class="field">
+        <label for="returnMemoSelect">기사님 방문 메모</label>
+        <select id="returnMemoSelect" onchange="handleReturnMemoChange(this.value)" style="width:100%;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--r-sm);margin-bottom:8px;background:#fff;">
+          <option value="문 앞(비대면 수거)에 놓아둘게요">문 앞(비대면 수거)에 놓아둘게요 (추천)</option>
+          <option value="경비실에 맡겨둘게요">경비실에 맡겨둘게요</option>
+          <option value="방문 전 미리 연락 부탁드립니다">방문 전 미리 연락 부탁드립니다</option>
+          <option value="직접 전달해 드릴게요">직접 전달해 드릴게요</option>
+          <option value="custom">직접 입력하기</option>
+        </select>
+        <input type="text" id="returnMemoCustom" placeholder="수거 관련 전달사항을 입력해주세요" style="display:none;margin-top:6px;">
+      </div>
+
+      <div class="form-error" id="returnError"></div>
+
+      <div class="btn-row" style="margin-top:28px;">
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitReturnBtn">반송 신청 접수하기</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 반송 수거 정보 확인 모달 -->
+<div class="modal-backdrop" id="returnInfoModal" onclick="handleBackdropClick(event, 'returnInfoModal')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>반송 수거 정보</h3>
+      <button type="button" class="modal-close" onclick="closeModal('returnInfoModal')">&times;</button>
+    </div>
+    <div id="returnInfoContent" style="font-size:0.95rem;line-height:1.7;"></div>
+    <div class="btn-row" style="margin-top:24px;">
+      <button type="button" class="btn btn-dark btn-block" onclick="closeModal('returnInfoModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 회원 탈퇴 확인 모달 -->
+<div class="modal-backdrop" id="deleteAccountModal" onclick="handleBackdropClick(event, 'deleteAccountModal')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="color:#b91c1c;">회원 탈퇴</h3>
+      <button type="button" class="modal-close" onclick="closeModal('deleteAccountModal')">&times;</button>
+    </div>
+    <p class="modal-desc" style="color:var(--text);font-weight:600;">정말로 Wellscore 계정을 탈퇴하시겠어요?</p>
+    <div class="info-callout" style="background:#fff5f5;border-color:#fecaca;color:#991b1b;">
+      <strong>⚠️ 탈퇴 전 반드시 확인해주세요</strong><br>
+      • 보유 중인 잔여 검사권은 즉시 소멸되며 환불이 불가능합니다.<br>
+      • 진행 중인 키트 신청, 배송 및 반송이 모두 중단되거나 조회할 수 없습니다.<br>
+      • 완료된 모든 NAD+ 검사 리포트와 분석 데이터가 영구 삭제되어 다시 열람할 수 없습니다.
+    </div>
+    <div class="field">
+      <label for="deleteConfirmInput" style="font-size:0.9rem;">탈퇴 확인을 위해 아래에 <strong>탈퇴합니다</strong>를 정확히 입력해주세요.</label>
+      <input type="text" id="deleteConfirmInput" placeholder="탈퇴합니다" oninput="handleDeleteInputChange(this.value)">
+    </div>
+    <div class="form-error" id="deleteError"></div>
+    <div class="btn-row" style="margin-top:24px;justify-content:flex-end;">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('deleteAccountModal')">취소</button>
+      <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled onclick="executeDeleteAccount()">영구 탈퇴하기</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast">
   <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 5-5.5"/></svg></span>
   <span id="toastText"></span>
 </div>
 
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* =================================================================
@@ -832,7 +1044,13 @@ async function getRequests(userId) {
   return data.map(r => ({
     id: r.id, date: r.created_at, status: r.status,
     recipientName: r.recipient_name, recipientPhone: r.recipient_phone,
-    zonecode: r.zonecode, address: r.address, addressDetail: r.address_detail
+    zonecode: r.zonecode, address: r.address, addressDetail: r.address_detail,
+    trackingCarrier: r.tracking_carrier, trackingNumber: r.tracking_number, shippedAt: r.shipped_at,
+    returnName: r.return_name, returnPhone: r.return_phone,
+    returnZonecode: r.return_zonecode, returnAddress: r.return_address,
+    returnAddressDetail: r.return_address_detail, returnMemo: r.return_memo,
+    returnRequestedAt: r.return_requested_at,
+    returnCarrier: r.return_carrier, returnTrackingNumber: r.return_tracking_number
   }));
 }
 
@@ -982,17 +1200,224 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </script>
 <script>
+let currentUserProfile = null;
+let currentRequestsCache = [];
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
 function statusToClass(status) {
-  const map = { '배송준비중': 'pending', '배송중': 'shipping', '검사중': 'testing', '완료': 'done' };
+  const map = {
+    '배송준비중': 'pending',
+    '배송중': 'shipping',
+    '반송신청': 'return-req',
+    '반송중': 'return-ship',
+    '검사중': 'testing',
+    '완료': 'done'
+  };
   return map[status] || 'pending';
 }
 
+/* ---------- 모달 제어 ---------- */
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+function handleBackdropClick(event, id) {
+  if (event.target && event.target.id === id) {
+    closeModal(id);
+  }
+}
+
+/* ---------- 우편번호 검색 (프로필 & 반송) ---------- */
+function execProfilePostcode() {
+  if (typeof daum === 'undefined') {
+    alert('주소 검색 서비스를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+  new daum.Postcode({
+    oncomplete: function (data) {
+      document.getElementById('profZonecode').value = data.zonecode;
+      document.getElementById('profAddress').value = data.roadAddress || data.jibunAddress;
+      document.getElementById('profAddressDetail').focus();
+    }
+  }).open();
+}
+
+function execReturnPostcode() {
+  if (typeof daum === 'undefined') {
+    alert('주소 검색 서비스를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+  new daum.Postcode({
+    oncomplete: function (data) {
+      document.getElementById('returnZonecode').value = data.zonecode;
+      document.getElementById('returnAddress').value = data.roadAddress || data.jibunAddress;
+      document.getElementById('returnAddressDetail').focus();
+    }
+  }).open();
+}
+
+/* ---------- 반송 신청 모달 및 제출 ---------- */
+function openReturnModal(requestId) {
+  const req = currentRequestsCache.find(r => r.id === requestId);
+  document.getElementById('returnRequestId').value = requestId;
+  document.getElementById('returnError').style.display = 'none';
+
+  const user = currentUserProfile || {};
+  document.getElementById('returnName').value = (req && req.recipientName) || user.name || '';
+  document.getElementById('returnPhone').value = (req && req.recipientPhone) || user.phone || '';
+  document.getElementById('returnZonecode').value = (req && req.zonecode) || user.zonecode || '';
+  document.getElementById('returnAddress').value = (req && req.address) || user.address || '';
+  document.getElementById('returnAddressDetail').value = (req && req.addressDetail) || user.address_detail || '';
+  document.getElementById('returnMemoSelect').value = '문 앞(비대면 수거)에 놓아둘게요';
+  document.getElementById('returnMemoCustom').style.display = 'none';
+  document.getElementById('returnMemoCustom').value = '';
+
+  openModal('returnKitModal');
+}
+
+function handleReturnMemoChange(val) {
+  const custom = document.getElementById('returnMemoCustom');
+  if (val === 'custom') {
+    custom.style.display = 'block';
+    custom.focus();
+  } else {
+    custom.style.display = 'none';
+    custom.value = '';
+  }
+}
+
+function viewReturnInfo(requestId) {
+  const req = currentRequestsCache.find(r => r.id === requestId);
+  if (!req) return;
+  const contentEl = document.getElementById('returnInfoContent');
+  contentEl.innerHTML = `
+    <div style="background:var(--bg-soft);padding:20px;border-radius:var(--r-md);margin-bottom:14px;border:1px solid var(--border-light);">
+      <p style="margin-bottom:8px;"><strong>신청번호:</strong> ${escapeHtml(req.id)}</p>
+      <p style="margin-bottom:8px;"><strong>반송 진행상태:</strong> <span class="status-badge status-${statusToClass(req.status)}">${escapeHtml(req.status)}</span></p>
+      <p style="margin-bottom:8px;"><strong>반송 접수일시:</strong> ${req.returnRequestedAt ? new Date(req.returnRequestedAt).toLocaleString('ko-KR') : '-'}</p>
+      <p style="margin-bottom:8px;"><strong>보내시는 분:</strong> ${escapeHtml(req.returnName || req.recipientName)} (${escapeHtml(req.returnPhone || req.recipientPhone)})</p>
+      <p style="margin-bottom:8px;"><strong>수거지 주소:</strong> [${escapeHtml(req.returnZonecode || req.zonecode || '')}] ${escapeHtml(req.returnAddress || req.address || '')} ${escapeHtml(req.returnAddressDetail || req.addressDetail || '')}</p>
+      <p style="margin-bottom:8px;"><strong>수거 메모:</strong> ${escapeHtml(req.returnMemo || '문 앞(비대면 수거)')}</p>
+      ${req.returnTrackingNumber ? `
+        <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);color:var(--text);font-weight:600;">
+          회수 송장: ${escapeHtml(req.returnCarrier || 'CJ대한통운')} <code>${escapeHtml(req.returnTrackingNumber)}</code>
+        </div>
+      ` : '<p style="color:var(--text-tertiary);font-size:0.88rem;margin-top:10px;">* 택배 기사님이 방문하여 수거 송장을 부착할 예정입니다.</p>'}
+    </div>
+  `;
+  openModal('returnInfoModal');
+}
+
+/* ---------- 회원 탈퇴 모달 및 실행 ---------- */
+function openDeleteAccountModal() {
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('confirmDeleteBtn').disabled = true;
+  document.getElementById('deleteError').style.display = 'none';
+  openModal('deleteAccountModal');
+}
+
+function handleDeleteInputChange(val) {
+  document.getElementById('confirmDeleteBtn').disabled = (val.trim() !== '탈퇴합니다');
+}
+
+async function executeDeleteAccount() {
+  const confirmBtn = document.getElementById('confirmDeleteBtn');
+  const errorEl = document.getElementById('deleteError');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = '탈퇴 처리 중...';
+  errorEl.style.display = 'none';
+
+  try {
+    const { error } = await sb.rpc('delete_user_account');
+    if (error) throw error;
+    await sb.auth.signOut();
+    window.location.href = 'index.html?withdrawn=1';
+  } catch (err) {
+    console.error('탈퇴 처리 실패:', err);
+    errorEl.textContent = '회원 탈퇴 처리 중 문제가 발생했어요: ' + (err.message || '다시 시도해주세요.');
+    errorEl.style.display = 'block';
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = '영구 탈퇴하기';
+  }
+}
+
+/* ---------- 렌더링 함수들 ---------- */
+function renderRequestsTable(requests) {
+  const reqBody = document.getElementById('requestTableBody');
+  if (!requests.length) {
+    reqBody.innerHTML = `<tr><td colspan="5" class="empty-row">신청한 검사가 없어요. 보유한 검사권으로 키트를 신청해보세요.</td></tr>`;
+    return;
+  }
+
+  reqBody.innerHTML = requests.map(r => {
+    // 배송 / 반송 정보 텍스트 구성
+    let shippingInfo = '-';
+    if (r.status === '배송준비중') {
+      shippingInfo = `<span style="color:var(--text-secondary);font-size:0.88rem;">키트 출고 준비 중</span>`;
+    } else if (r.status === '배송중') {
+      shippingInfo = `<div style="line-height:1.4;">
+        <span style="font-weight:600;font-size:0.88rem;color:#1a56db;">키트 배송 중</span>
+        ${r.trackingNumber ? `<br><span style="font-size:0.8rem;color:var(--text-secondary);">${escapeHtml(r.trackingCarrier || '택배')} ${escapeHtml(r.trackingNumber)}</span>` : ''}
+      </div>`;
+    } else if (r.status === '반송신청') {
+      shippingInfo = `<div style="line-height:1.4;">
+        <span style="font-weight:600;font-size:0.88rem;color:#c8790a;">반송 접수됨</span>
+        <br><button type="button" class="text-link" style="font-size:0.8rem;background:none;border:none;cursor:pointer;padding:0;" onclick="viewReturnInfo('${escapeHtml(r.id)}')">수거 정보 확인</button>
+      </div>`;
+    } else if (r.status === '반송중') {
+      shippingInfo = `<div style="line-height:1.4;">
+        <span style="font-weight:600;font-size:0.88rem;color:#4338ca;">반송 회수 이동 중</span>
+        ${r.returnTrackingNumber ? `<br><span style="font-size:0.8rem;color:var(--text-secondary);">${escapeHtml(r.returnCarrier || '택배')} ${escapeHtml(r.returnTrackingNumber)}</span>` : ''}
+        <br><button type="button" class="text-link" style="font-size:0.8rem;background:none;border:none;cursor:pointer;padding:0;" onclick="viewReturnInfo('${escapeHtml(r.id)}')">수거 정보 확인</button>
+      </div>`;
+    } else if (r.status === '검사중') {
+      shippingInfo = `<span style="color:#6b21db;font-size:0.88rem;font-weight:600;">연구소 검체 분석 중</span>`;
+    } else if (r.status === '완료') {
+      shippingInfo = `<span style="color:var(--green);font-size:0.88rem;font-weight:600;">분석 및 발행 완료</span>`;
+    }
+
+    // 리포트 / 처리 버튼 구성
+    let actionHtml = '-';
+    if (r.status === '완료') {
+      actionHtml = `<a href="report.html?id=${encodeURIComponent(r.id)}" class="link-arrow">리포트 보기 →</a>`;
+    } else if (r.status === '배송중' || r.status === '배송준비중') {
+      actionHtml = `<button type="button" class="btn btn-primary btn-sm" onclick="openReturnModal('${escapeHtml(r.id)}')">반송 신청</button>`;
+    } else if (r.status === '반송신청') {
+      actionHtml = `<span style="color:var(--text-secondary);font-size:0.88rem;">수거 대기 중</span>`;
+    } else if (r.status === '반송중') {
+      actionHtml = `<span style="color:var(--text-secondary);font-size:0.88rem;">검사소 입고 대기</span>`;
+    } else if (r.status === '검사중') {
+      actionHtml = `<span style="color:var(--text-secondary);font-size:0.88rem;">결과 분석 중</span>`;
+    }
+
+    return `
+      <tr>
+        <td data-label="신청번호">${escapeHtml(r.id)}</td>
+        <td data-label="신청일">${formatDate(r.date)}</td>
+        <td data-label="진행 상태"><span class="status-badge status-${statusToClass(r.status)}">${escapeHtml(r.status)}</span></td>
+        <td data-label="배송 / 반송">${shippingInfo}</td>
+        <td data-label="리포트 / 처리">${actionHtml}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* ---------- 페이지 초기화 ---------- */
 document.addEventListener('DOMContentLoaded', async () => {
   const user = await getCurrentUser();
   if (!user) {
     window.location.href = 'login.html';
     return;
   }
+  currentUserProfile = user;
 
   document.getElementById('userName').textContent = user.name;
 
@@ -1001,6 +1426,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('requestKitBtn').style.display = voucherCount > 0 ? 'inline-flex' : 'none';
   document.getElementById('noVoucherMsg').style.display = voucherCount > 0 ? 'none' : 'block';
 
+  // 1. 프로필 정보 폼 채우기
+  document.getElementById('profEmail').value = user.email || '';
+  document.getElementById('profName').value = user.name || '';
+  document.getElementById('profPhone').value = user.phone || '';
+  if (user.birthdate) document.getElementById('profBirthdate').value = user.birthdate;
+  if (user.gender) {
+    const radio = document.querySelector(`input[name="profGender"][value="${user.gender}"]`);
+    if (radio) radio.checked = true;
+  }
+  if (user.zonecode) document.getElementById('profZonecode').value = user.zonecode;
+  if (user.address) document.getElementById('profAddress').value = user.address;
+  if (user.address_detail) document.getElementById('profAddressDetail').value = user.address_detail;
+
+  // 2. 구매 내역 조회
   const purchases = await getPurchases(user.id);
   const purchaseBody = document.getElementById('purchaseTableBody');
   purchaseBody.innerHTML = purchases.length
@@ -1012,24 +1451,163 @@ document.addEventListener('DOMContentLoaded', async () => {
         </tr>`).join('')
     : `<tr><td colspan="3" class="empty-row">아직 구매한 검사권이 없어요. 첫 검사를 시작해보세요.</td></tr>`;
 
+  // 3. 검사 신청 내역 조회
   const requests = await getRequests(user.id);
-  const reqBody = document.getElementById('requestTableBody');
-  reqBody.innerHTML = requests.length
-    ? requests.map(r => `
-        <tr>
-          <td data-label="신청번호">${r.id}</td>
-          <td data-label="신청일">${formatDate(r.date)}</td>
-          <td data-label="상태"><span class="status-badge status-${statusToClass(r.status)}">${r.status}</span></td>
-          <td data-label="리포트">${r.status === '완료' ? `<a href="report.html?id=${encodeURIComponent(r.id)}" class="link-arrow">리포트 보기</a>` : '-'}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="4" class="empty-row">신청한 검사가 없어요. 보유한 검사권으로 키트를 신청해보세요.</td></tr>`;
+  currentRequestsCache = requests;
+  renderRequestsTable(requests);
 
+  // 4. 프로필 정보 수정 폼 이벤트
+  const profileForm = document.getElementById('profileForm');
+  const profErrorEl = document.getElementById('profError');
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
+
+  profileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    profErrorEl.style.display = 'none';
+
+    const name = document.getElementById('profName').value.trim();
+    const phone = document.getElementById('profPhone').value.trim();
+    const birthdate = document.getElementById('profBirthdate').value;
+    const genderInput = document.querySelector('input[name="profGender"]:checked');
+    const gender = genderInput ? genderInput.value : '';
+    const zonecode = document.getElementById('profZonecode').value.trim();
+    const address = document.getElementById('profAddress').value.trim();
+    const addressDetail = document.getElementById('profAddressDetail').value.trim();
+    const newPassword = document.getElementById('profNewPassword').value;
+    const newPasswordConfirm = document.getElementById('profNewPasswordConfirm').value;
+
+    if (!name || !phone) {
+      profErrorEl.textContent = '이름과 휴대폰 번호는 필수 입력 항목이에요.';
+      profErrorEl.style.display = 'block';
+      return;
+    }
+
+    if (newPassword || newPasswordConfirm) {
+      if (newPassword.length < 8) {
+        profErrorEl.textContent = '새 비밀번호는 8자 이상 입력해주세요.';
+        profErrorEl.style.display = 'block';
+        return;
+      }
+      if (newPassword !== newPasswordConfirm) {
+        profErrorEl.textContent = '새 비밀번호가 일치하지 않아요.';
+        profErrorEl.style.display = 'block';
+        return;
+      }
+    }
+
+    saveProfileBtn.disabled = true;
+    saveProfileBtn.textContent = '저장 중...';
+
+    try {
+      // 1) profiles 테이블 업데이트
+      const { error: profileError } = await sb
+        .from('profiles')
+        .update({
+          name,
+          phone,
+          birthdate: birthdate || null,
+          gender: gender || null,
+          zonecode: zonecode || null,
+          address: address || null,
+          address_detail: addressDetail || null
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // 2) 비밀번호 변경 요청이 있는 경우 auth.updateUser
+      if (newPassword) {
+        const { error: pwdError } = await sb.auth.updateUser({ password: newPassword });
+        if (pwdError) throw pwdError;
+        document.getElementById('profNewPassword').value = '';
+        document.getElementById('profNewPasswordConfirm').value = '';
+      }
+
+      // 로컬 캐시 갱신 및 헤더 이름 변경
+      currentUserProfile.name = name;
+      currentUserProfile.phone = phone;
+      currentUserProfile.birthdate = birthdate;
+      currentUserProfile.gender = gender;
+      currentUserProfile.zonecode = zonecode;
+      currentUserProfile.address = address;
+      currentUserProfile.address_detail = addressDetail;
+      document.getElementById('userName').textContent = name;
+
+      showToast('개인정보가 성공적으로 변경되었어요.');
+    } catch (err) {
+      console.error('정보 수정 실패:', err);
+      profErrorEl.textContent = '정보 저장 중 문제가 발생했어요: ' + (err.message || '다시 시도해주세요.');
+      profErrorEl.style.display = 'block';
+    } finally {
+      saveProfileBtn.disabled = false;
+      saveProfileBtn.textContent = '회원 정보 저장';
+    }
+  });
+
+  // 5. 반송 신청 폼 이벤트
+  const returnForm = document.getElementById('returnKitForm');
+  const returnErrorEl = document.getElementById('returnError');
+  const submitReturnBtn = document.getElementById('submitReturnBtn');
+
+  returnForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    returnErrorEl.style.display = 'none';
+
+    const requestId = document.getElementById('returnRequestId').value;
+    const name = document.getElementById('returnName').value.trim();
+    const phone = document.getElementById('returnPhone').value.trim();
+    const zonecode = document.getElementById('returnZonecode').value.trim();
+    const address = document.getElementById('returnAddress').value.trim();
+    const addressDetail = document.getElementById('returnAddressDetail').value.trim();
+    const memoSelect = document.getElementById('returnMemoSelect').value;
+    const memoCustom = document.getElementById('returnMemoCustom').value.trim();
+    const memo = memoSelect === 'custom' ? memoCustom : memoSelect;
+
+    if (!name || !phone || !zonecode || !address) {
+      returnErrorEl.textContent = '보내시는 분 성함, 연락처, 수거 주소를 모두 입력해주세요.';
+      returnErrorEl.style.display = 'block';
+      return;
+    }
+
+    submitReturnBtn.disabled = true;
+    submitReturnBtn.textContent = '반송 신청 접수 중...';
+
+    try {
+      const { error } = await sb.rpc('request_kit_return', {
+        p_request_id: requestId,
+        p_return_name: name,
+        p_return_phone: phone,
+        p_return_zonecode: zonecode,
+        p_return_address: address,
+        p_return_address_detail: addressDetail,
+        p_return_memo: memo
+      });
+
+      if (error) throw error;
+
+      closeModal('returnKitModal');
+      showToast('키트 반송 신청이 접수되었어요. 기사님이 방문 수거할 예정이에요.');
+
+      // 신청 목록 새로고침
+      const updatedRequests = await getRequests(user.id);
+      currentRequestsCache = updatedRequests;
+      renderRequestsTable(updatedRequests);
+    } catch (err) {
+      console.error('반송 신청 실패:', err);
+      returnErrorEl.textContent = '반송 신청 중 문제가 발생했어요: ' + (err.message || '다시 시도해주세요.');
+      returnErrorEl.style.display = 'block';
+    } finally {
+      submitReturnBtn.disabled = false;
+      submitReturnBtn.textContent = '반송 신청 접수하기';
+    }
+  });
+
+  // URL 파라미터 알림
   const params = new URLSearchParams(window.location.search);
   if (params.get('welcome')) showToast('가입을 환영해요! 검사권을 구매하고 첫 검사를 시작해보세요.');
   if (params.get('purchase') === 'success') showToast('결제가 완료되어 검사권이 충전됐어요.');
   if (params.get('request') === 'success') showToast('키트 신청이 접수됐어요. 곧 배송을 시작할게요.');
 });
-
 </script>
 </body>
 </html>

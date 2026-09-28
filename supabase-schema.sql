@@ -35,17 +35,29 @@ create table public.purchases (
 alter table public.purchases enable row level security;
 
 -- ------------------------------------------------------------
--- 3. requests 테이블 (키트 신청 / 배송·검사 상태)
+-- 3. requests 테이블 (키트 신청 / 배송·반송·검사 상태)
 -- ------------------------------------------------------------
 create table public.requests (
   id text primary key,
   user_id uuid not null references public.profiles(id) on delete cascade,
-  status text not null default '배송준비중' check (status in ('배송준비중','배송중','검사중','완료')),
+  status text not null default '배송준비중' check (status in ('배송준비중','배송중','반송신청','반송중','검사중','완료')),
   recipient_name text not null,
   recipient_phone text not null,
   zonecode text not null,
   address text not null,
   address_detail text not null,
+  tracking_carrier text default 'CJ대한통운',
+  tracking_number text,
+  shipped_at timestamptz,
+  return_name text,
+  return_phone text,
+  return_zonecode text,
+  return_address text,
+  return_address_detail text,
+  return_memo text,
+  return_requested_at timestamptz,
+  return_carrier text default 'CJ대한통운',
+  return_tracking_number text,
   created_at timestamptz not null default now()
 );
 alter table public.requests enable row level security;
@@ -236,10 +248,119 @@ begin
 end;
 $$;
 
+-- 사용자: 직접 반송 신청
+create or replace function public.request_kit_return(
+  p_request_id text,
+  p_return_name text,
+  p_return_phone text,
+  p_return_zonecode text,
+  p_return_address text,
+  p_return_address_detail text,
+  p_return_memo text
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user_id uuid;
+  v_current_status text;
+begin
+  if auth.uid() is null then raise exception '로그인이 필요합니다.'; end if;
+
+  select user_id, status into v_user_id, v_current_status
+  from public.requests where id = p_request_id;
+
+  if v_user_id is null or v_user_id <> auth.uid() then
+    raise exception '신청 내역을 찾을 수 없거나 권한이 없습니다.';
+  end if;
+
+  if v_current_status not in ('배송중', '배송준비중') then
+    raise exception '현재 상태에서는 반송을 신청할 수 없습니다. (현재: %)', v_current_status;
+  end if;
+
+  update public.requests
+  set status = '반송신청',
+      return_name = coalesce(p_return_name, recipient_name),
+      return_phone = coalesce(p_return_phone, recipient_phone),
+      return_zonecode = coalesce(p_return_zonecode, zonecode),
+      return_address = coalesce(p_return_address, address),
+      return_address_detail = coalesce(p_return_address_detail, address_detail),
+      return_memo = p_return_memo,
+      return_requested_at = now()
+  where id = p_request_id;
+end;
+$$;
+
+-- 관리자: 배송 출고 정보 업데이트 (송장 등록 및 상태 변경)
+create or replace function public.admin_update_delivery(
+  p_request_id text,
+  p_status text,
+  p_carrier text,
+  p_tracking_number text
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not (select public.is_admin()) then raise exception '권한이 없습니다.'; end if;
+
+  update public.requests
+  set status = coalesce(nullif(p_status, ''), status),
+      tracking_carrier = coalesce(nullif(p_carrier, ''), tracking_carrier),
+      tracking_number = coalesce(nullif(p_tracking_number, ''), tracking_number),
+      shipped_at = case when p_status = '배송중' and shipped_at is null then now() else shipped_at end
+  where id = p_request_id;
+end;
+$$;
+
+-- 관리자: 반송 회수 정보 업데이트 (반송 송장 및 상태 변경)
+create or replace function public.admin_update_return(
+  p_request_id text,
+  p_status text,
+  p_carrier text,
+  p_tracking_number text
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not (select public.is_admin()) then raise exception '권한이 없습니다.'; end if;
+
+  update public.requests
+  set status = coalesce(nullif(p_status, ''), status),
+      return_carrier = coalesce(nullif(p_carrier, ''), return_carrier),
+      return_tracking_number = coalesce(nullif(p_tracking_number, ''), return_tracking_number)
+  where id = p_request_id;
+end;
+$$;
+
+-- 회원 탈퇴: 내 계정 영구 삭제 (auth.users 삭제 -> 연관 데이터 자동 cascade 삭제)
+create or replace function public.delete_user_account()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then raise exception '로그인이 필요합니다.'; end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
 grant execute on function public.record_purchase(integer, integer) to authenticated;
 grant execute on function public.record_kit_request(text, text, text, text, text, text) to authenticated;
+grant execute on function public.request_kit_return(text, text, text, text, text, text, text) to authenticated;
 grant execute on function public.admin_update_status(text, text) to authenticated;
+grant execute on function public.admin_update_delivery(text, text, text, text) to authenticated;
+grant execute on function public.admin_update_return(text, text, text, text) to authenticated;
 grant execute on function public.admin_record_result(text, numeric, integer, text) to authenticated;
+grant execute on function public.delete_user_account() to authenticated;
 
 -- ============================================================
 -- 완료. 아래는 참고용 확인 쿼리입니다 (실행하지 않아도 됩니다).

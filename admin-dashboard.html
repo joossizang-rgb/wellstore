@@ -356,27 +356,186 @@ h2.section-title {
 .notice-box strong { color: var(--text); font-weight: 700; }
 
 /* ---------------------------------- Admin ---------------------------------- */
-.admin-topbar { background: var(--bg-dark); padding: 18px 0; }
+.admin-topbar { background: var(--bg-dark); padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
 .admin-topbar-inner { max-width: var(--max); margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
-.admin-logo { color: #fff; font-weight: 800; font-size: 1.1rem; }
-.admin-tag { background: var(--red); color: #fff; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: var(--r-full); margin-left: 8px; vertical-align: middle; }
+.admin-logo { color: #fff; font-weight: 800; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; }
+.admin-tag { background: var(--red); color: #fff; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: var(--r-full); }
 .admin-topbar .btn-ghost { background: var(--bg-dark-raised); color: #fff; }
 .admin-topbar .btn-ghost:hover { background: #3a3a3d; }
 
-.admin-shell { max-width: 980px; margin: 0 auto; padding: 48px 24px 100px; }
-.admin-shell h1 { font-size: 1.6rem; margin-bottom: 6px; }
-.admin-shell > p.sub { color: var(--text-secondary); margin-bottom: 40px; }
-.admin-section { margin-bottom: 48px; }
-.admin-section h2 { font-size: 1.15rem; margin-bottom: 18px; }
-.admin-empty { text-align: center; padding: 44px; color: var(--text-tertiary); border: 1px dashed var(--border); border-radius: var(--r-md); font-size: .92rem; }
+.admin-shell { max-width: 1100px; margin: 0 auto; padding: 40px 24px 100px; }
+.admin-shell h1 { font-size: 1.8rem; margin-bottom: 6px; }
+.admin-shell > p.sub { color: var(--text-secondary); margin-bottom: 32px; }
+
+/* Admin Stats Cards */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+@media (max-width: 960px) { .admin-stats-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .admin-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.stat-card {
+  background: #fff;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--r-md);
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  text-align: left;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+.stat-card.active {
+  border-color: var(--red);
+  background: #fff8f8;
+}
+.stat-card .label { font-size: .78rem; color: var(--text-tertiary); font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+.stat-card .count { font-size: 1.55rem; font-weight: 800; color: var(--text); line-height: 1.1; }
+
+/* Admin Tabs */
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.tab-btn {
+  padding: 10px 18px;
+  border-radius: var(--r-full);
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab-btn:hover { background: var(--bg-soft); color: var(--text); }
+.tab-btn.active { background: var(--bg-dark); color: #fff; }
+
+/* Filter & Search Bar */
+.admin-filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+.search-input-wrap input {
+  width: 100%;
+  padding: 11px 16px 11px 40px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-full);
+  font-size: .92rem;
+  background: #fff;
+  transition: border-color .15s;
+}
+.search-input-wrap input:focus { border-color: var(--text); outline: none; }
+.search-input-wrap svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  width: 17px;
+  height: 17px;
+  pointer-events: none;
+}
+
+/* Address Card & Inline Action Components */
+.admin-addr-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: .88rem;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.admin-addr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.copy-badge-btn {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  font-size: .75rem;
+  padding: 3px 9px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: border-color .15s, color .15s;
+  flex-shrink: 0;
+}
+.copy-badge-btn:hover { border-color: var(--text); color: var(--text); }
+.tracking-inline-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.tracking-inline-group select, .tracking-inline-group input {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: .82rem;
+  background: #fff;
+}
+.tracking-inline-group input { width: 140px; }
+
+.admin-section { margin-bottom: 40px; }
+.admin-section h2 { font-size: 1.18rem; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.admin-empty { text-align: center; padding: 48px; color: var(--text-tertiary); border: 1px dashed var(--border); border-radius: var(--r-md); font-size: .92rem; }
 
 .admin-table select { border: 1px solid var(--border); border-radius: var(--r-sm); padding: 7px 8px; font-size: .85rem; background: #fff; }
 .admin-row-form { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--r-md); padding: 26px; margin-top: 16px; }
-.admin-row-form h3 { font-size: 1.02rem; margin-bottom: 4px; }
+.admin-row-form h3 { font-size: 1.05rem; margin-bottom: 4px; }
 .admin-row-form .sub { color: var(--text-secondary); font-size: .88rem; margin-bottom: 20px; }
 .admin-preview { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border-light); border-radius: var(--r-full); padding: 9px 18px; font-weight: 700; color: var(--red); margin-top: 4px; font-size: .95rem; }
 .admin-field-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: end; }
 @media (max-width: 600px) { .admin-field-row { grid-template-columns: 1fr; } }
+
+/* Modals */
+.admin-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  z-index: 2000; display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none;
+  transition: opacity .2s ease;
+}
+.admin-modal-backdrop.open { opacity: 1; pointer-events: auto; }
+.admin-modal-card {
+  background: #fff; border-radius: var(--r-lg); width: 100%; max-width: 540px;
+  max-height: 90vh; overflow-y: auto; padding: 36px 32px;
+  box-shadow: var(--shadow-lg); transform: translateY(12px) scale(.98);
+  transition: transform .2s var(--ease);
+}
+.admin-modal-backdrop.open .admin-modal-card { transform: translateY(0) scale(1); }
+.admin-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.admin-modal-header h3 { font-size: 1.25rem; font-weight: 800; }
+.admin-modal-close { color: var(--text-tertiary); font-size: 1.5rem; line-height: 1; padding: 4px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; background: none; }
+.admin-modal-close:hover { color: var(--text); }
 
 @media (max-width: 860px) {
   .showcase { grid-template-columns: 1fr; gap: 40px; }
@@ -560,6 +719,8 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
 .status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: var(--r-full); }
 .status-pending { background: var(--amber-tint); color: var(--amber-dark); }
 .status-shipping { background: #e8f0fe; color: #1a56db; }
+.status-return-req { background: #fff4e0; color: #c8790a; }
+.status-return-ship { background: #eef2ff; color: #4338ca; }
 .status-testing { background: #f1e8fe; color: #6b21db; }
 .status-done { background: var(--green-tint); color: #1c8a3b; }
 
@@ -685,31 +846,78 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
 <header class="admin-topbar">
   <div class="admin-topbar-inner">
     <span class="admin-logo">Wellscore<span class="admin-tag">관리자</span></span>
-    <button type="button" class="btn btn-ghost btn-sm" id="adminLogoutBtn" onclick="handleAdminLogout()" style="display:none;">로그아웃</button>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span id="adminUserEmail" style="color:var(--text-on-dark-secondary);font-size:0.86rem;"></span>
+      <button type="button" class="btn btn-ghost btn-sm" id="adminLogoutBtn" onclick="handleLogout()" style="display:none;">로그아웃</button>
+    </div>
   </div>
 </header>
 
 <main>
   <div class="admin-shell">
-    <h1>검사 신청 관리</h1>
-    <p class="sub">대기 중인 신청 상태를 갱신하고, 검사기관에서 받은 결과를 입력해 리포트를 발행하세요.</p>
-
-    <div class="notice-box" style="margin-bottom:40px;">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M11 12h1v5h1"/></svg></span>
-      <p><strong>실제 데이터베이스(Supabase)와 연동되어 있어요.</strong> 모든 기기·모든 회원의 신청 내역이 여기 표시돼요. 다만 로그인 계정의 <code>role</code>이 <code>admin</code>인 사람만 이 페이지를 볼 수 있으니, 접근을 더 강하게 제한하고 싶다면 Cloudflare Access로 <code>/admin*</code> 경로를 추가로 막는 걸 추천드려요.</p>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:8px;">
+      <div>
+        <h1>서비스 통합 운영 관리</h1>
+        <p class="sub" style="margin-bottom:0;">키트 배송 출고, 고객 직접 반송 회수, 검체 분석 및 결과 리포트 발행까지 모든 업무를 관리해요.</p>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" onclick="renderDashboard()">새로고침</button>
     </div>
 
-    <div class="admin-section">
-      <h2>대기 중인 신청</h2>
-      <div id="pendingWrap"></div>
+    <!-- 6대 핵심 업무 지표 통계 카드 -->
+    <div class="admin-stats-grid" id="statsWrap" style="margin-top:24px;"></div>
+
+    <!-- 업무별 탭 네비게이션 -->
+    <div class="admin-tabs">
+      <button type="button" class="tab-btn active" data-tab="all" onclick="switchTab('all')">📋 전체보기</button>
+      <button type="button" class="tab-btn" data-tab="delivery" onclick="switchTab('delivery')">📦 배송 출고 관리 <span id="deliveryTabBadge" style="font-size:0.75rem;padding:2px 7px;background:var(--red-tint);color:var(--red);border-radius:var(--r-full);margin-left:4px;">0</span></button>
+      <button type="button" class="tab-btn" data-tab="return" onclick="switchTab('return')">🔄 반송 회수 관리 <span id="returnTabBadge" style="font-size:0.75rem;padding:2px 7px;background:#fff4e0;color:#c8790a;border-radius:var(--r-full);margin-left:4px;">0</span></button>
+      <button type="button" class="tab-btn" data-tab="testing" onclick="switchTab('testing')">🔬 검사 및 결과 등록 <span id="testingTabBadge" style="font-size:0.75rem;padding:2px 7px;background:#f1e8fe;color:#6b21db;border-radius:var(--r-full);margin-left:4px;">0</span></button>
+      <button type="button" class="tab-btn" data-tab="completed" onclick="switchTab('completed')">✅ 완료된 리포트</button>
     </div>
 
-    <div class="admin-section">
-      <h2>최근 완료된 검사</h2>
-      <div id="completedWrap"></div>
+    <!-- 실시간 검색 및 필터 바 -->
+    <div class="admin-filter-bar">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="adminSearchInput" placeholder="신청번호, 고객명, 수령자명, 연락처, 주소, 송장번호 검색..." oninput="handleSearch(this.value)">
+      </div>
+      <div style="font-size:0.88rem;color:var(--text-secondary);white-space:nowrap;">
+        조회된 건수: <strong id="searchCount" style="color:var(--text);">0</strong>건
+      </div>
     </div>
+
+    <!-- 탭별 메인 뷰 컨테이너 -->
+    <div id="tabContentWrap"></div>
   </div>
 </main>
+
+<!-- 결과 입력 및 리포트 발행 / 수정 모달 -->
+<div class="admin-modal-backdrop" id="resultModal" onclick="handleAdminBackdropClick(event, 'resultModal')">
+  <div class="admin-modal-card">
+    <div class="admin-modal-header">
+      <h3 id="resultModalTitle">검사 결과 입력 및 리포트 발행</h3>
+      <button type="button" class="admin-modal-close" onclick="closeAdminModal('resultModal')">&times;</button>
+    </div>
+    <div id="resultModalClientInfo" style="font-size:0.92rem;color:var(--text-secondary);margin-bottom:18px;line-height:1.6;background:var(--bg-soft);padding:14px 16px;border-radius:var(--r-sm);"></div>
+    
+    <div class="field" style="margin-bottom:16px;">
+      <label for="resultValue">NAD+ 측정값 (μM)</label>
+      <input type="number" id="resultValue" step="0.1" min="0" placeholder="예: 38.4" oninput="previewModalPercentile()">
+    </div>
+
+    <div id="resultModalPreview" style="margin-bottom:20px;"></div>
+
+    <div class="btn-row" style="justify-content:flex-end;margin-top:24px;">
+      <button type="button" class="btn btn-ghost" onclick="closeAdminModal('resultModal')">취소</button>
+      <button type="button" class="btn btn-primary" id="saveResultBtn" onclick="submitModalResult()">저장하고 리포트 발행</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 5-5.5"/></svg></span>
+  <span id="toastText"></span>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -915,148 +1123,768 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavScroll();
   initFAQ();
 });
-
 </script>
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-  const user = await getCurrentUser();
-  if (!user) { window.location.href = 'login.html?redirect=admin'; return; }
-  if (user.role !== 'admin') {
-    document.querySelector('.admin-shell').innerHTML = '<div class="admin-empty">이 페이지에 접근할 권한이 없어요.</div>';
-    return;
-  }
-  document.getElementById('adminLogoutBtn').style.display = 'inline-flex';
-  renderDashboard();
-});
+let allRequestsCache = [];
+let activeTab = 'all';
+let searchKeyword = '';
+let currentModalRequestId = null;
+let currentModalAgeGroup = '30대';
 
 function escapeHtml(str) {
+  if (str == null) return '';
   return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
 }
 
+function statusToClass(status) {
+  const map = {
+    '배송준비중': 'pending',
+    '배송중': 'shipping',
+    '반송신청': 'return-req',
+    '반송중': 'return-ship',
+    '검사중': 'testing',
+    '완료': 'done'
+  };
+  return map[status] || 'pending';
+}
+
+/* ---------- 클립보드 복사 ---------- */
+function copyToClipboard(text, label) {
+  if (!text) return;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast((label || '정보') + '가 클립보드에 복사되었어요.');
+    }).catch(() => fallbackCopy(text, label));
+  } else {
+    fallbackCopy(text, label);
+  }
+}
+
+function fallbackCopy(text, label) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast((label || '정보') + '가 클립보드에 복사되었어요.');
+  } catch (err) {
+    alert('복사에 실패했어요: ' + text);
+  }
+  document.body.removeChild(ta);
+}
+
+/* ---------- 모달 제어 ---------- */
+function openAdminModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+function closeAdminModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+function handleAdminBackdropClick(event, id) {
+  if (event.target && event.target.id === id) {
+    closeAdminModal(id);
+  }
+}
+
+/* ---------- 탭 전환 ---------- */
+function switchTab(tabName) {
+  activeTab = tabName;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
+  });
+  renderTabContent();
+}
+
+/* ---------- 검색 처리 ---------- */
+function handleSearch(val) {
+  searchKeyword = (val || '').trim().toLowerCase();
+  renderTabContent();
+}
+
+/* ---------- 데이터 로드 ---------- */
 async function fetchAllRequests() {
   const { data, error } = await sb
     .from('requests')
-    .select('*, profiles(name, birthdate), reports(value, percentile)')
+    .select('*, profiles(name, phone, birthdate, gender), reports(value, percentile, age_group)')
     .order('created_at', { ascending: false });
-  if (error) { console.error(error); return []; }
+
+  if (error) {
+    console.error('신청 목록 조회 실패:', error);
+    showToast('데이터 조회 중 문제가 발생했어요.');
+    return [];
+  }
+
   return data.map(r => ({
     id: r.id,
     date: r.created_at,
     status: r.status,
-    customerName: r.profiles ? r.profiles.name : '(알 수 없음)',
+    recipientName: r.recipient_name,
+    recipientPhone: r.recipient_phone,
+    zonecode: r.zonecode,
+    address: r.address,
+    addressDetail: r.address_detail,
+    trackingCarrier: r.tracking_carrier || 'CJ대한통운',
+    trackingNumber: r.tracking_number,
+    shippedAt: r.shipped_at,
+    returnName: r.return_name,
+    returnPhone: r.return_phone,
+    returnZonecode: r.return_zonecode,
+    returnAddress: r.return_address,
+    returnAddressDetail: r.return_address_detail,
+    returnMemo: r.return_memo,
+    returnRequestedAt: r.return_requested_at,
+    returnCarrier: r.return_carrier || 'CJ대한통운',
+    returnTrackingNumber: r.return_tracking_number,
+    customerName: r.profiles ? r.profiles.name : (r.recipient_name || '(알 수 없음)'),
+    customerPhone: r.profiles ? r.profiles.phone : r.recipient_phone,
+    customerBirthdate: r.profiles ? r.profiles.birthdate : null,
+    customerGender: r.profiles ? r.profiles.gender : '',
     ageGroup: r.profiles && r.profiles.birthdate ? getAgeGroup(r.profiles.birthdate) : '30대',
     report: Array.isArray(r.reports) ? r.reports[0] : r.reports
   }));
 }
 
+/* ---------- 메인 대시보드 렌더링 ---------- */
 async function renderDashboard() {
-  const all = await fetchAllRequests();
-  const pending = all.filter(r => r.status !== '완료').sort((a, b) => new Date(a.date) - new Date(b.date));
-  const completed = all.filter(r => r.status === '완료').sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
+  allRequestsCache = await fetchAllRequests();
+  renderStats();
+  renderTabContent();
+}
 
-  const pendingWrap = document.getElementById('pendingWrap');
-  if (!pending.length) {
-    pendingWrap.innerHTML = '<div class="admin-empty">대기 중인 신청이 없어요.</div>';
-  } else {
-    pendingWrap.innerHTML = `
-      <div class="table-wrap">
-        <table class="data-table admin-table">
-          <thead><tr><th>신청번호</th><th>고객</th><th>신청일</th><th>상태</th><th></th></tr></thead>
-          <tbody>
-            ${pending.map(r => `
-              <tr>
-                <td data-label="신청번호">${escapeHtml(r.id)}</td>
-                <td data-label="고객">${escapeHtml(r.customerName)} · ${r.ageGroup}</td>
-                <td data-label="신청일">${formatDate(r.date)}</td>
-                <td data-label="상태">
-                  <select onchange="changeStatus('${escapeHtml(r.id)}', this.value)">
-                    ${['배송준비중','배송중','검사중'].map(s => `<option value="${s}" ${s === r.status ? 'selected' : ''}>${s}</option>`).join('')}
-                  </select>
-                </td>
-                <td data-label="액션"><button type="button" class="btn btn-outline btn-sm" onclick="openResultForm('${escapeHtml(r.id)}','${escapeHtml(r.customerName)}','${r.ageGroup}')">결과 입력</button></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-      <div id="resultFormWrap"></div>
-    `;
+/* ---------- 상단 요약 통계 렌더링 ---------- */
+function renderStats() {
+  const total = allRequestsCache.length;
+  const deliveryPrep = allRequestsCache.filter(r => r.status === '배송준비중').length;
+  const shipping = allRequestsCache.filter(r => r.status === '배송중').length;
+  const returnReq = allRequestsCache.filter(r => r.status === '반송신청').length;
+  const returnShip = allRequestsCache.filter(r => r.status === '반송중').length;
+  const testing = allRequestsCache.filter(r => r.status === '검사중').length;
+  const completed = allRequestsCache.filter(r => r.status === '완료').length;
+
+  // 탭 배지 업데이트
+  const dBadge = document.getElementById('deliveryTabBadge');
+  if (dBadge) dBadge.textContent = deliveryPrep;
+  const rBadge = document.getElementById('returnTabBadge');
+  if (rBadge) rBadge.textContent = returnReq + returnShip;
+  const tBadge = document.getElementById('testingTabBadge');
+  if (tBadge) tBadge.textContent = testing;
+
+  const statsWrap = document.getElementById('statsWrap');
+  statsWrap.innerHTML = `
+    <div class="stat-card ${activeTab === 'all' ? 'active' : ''}" onclick="switchTab('all')">
+      <div class="label">전체 신청</div>
+      <div class="count">${total}</div>
+    </div>
+    <div class="stat-card ${activeTab === 'delivery' ? 'active' : ''}" onclick="switchTab('delivery')">
+      <div class="label">📦 출고 대기</div>
+      <div class="count" style="color:var(--red);">${deliveryPrep}</div>
+    </div>
+    <div class="stat-card ${activeTab === 'delivery' ? 'active' : ''}" onclick="switchTab('delivery')">
+      <div class="label">🚚 배송 진행</div>
+      <div class="count" style="color:#1a56db;">${shipping}</div>
+    </div>
+    <div class="stat-card ${activeTab === 'return' ? 'active' : ''}" onclick="switchTab('return')">
+      <div class="label">🔄 반송 접수</div>
+      <div class="count" style="color:#c8790a;">${returnReq}</div>
+    </div>
+    <div class="stat-card ${activeTab === 'return' ? 'active' : ''}" onclick="switchTab('return')">
+      <div class="label">🚛 반송 회수중</div>
+      <div class="count" style="color:#4338ca;">${returnShip}</div>
+    </div>
+    <div class="stat-card ${activeTab === 'testing' ? 'active' : ''}" onclick="switchTab('testing')">
+      <div class="label">🔬 검사 진행</div>
+      <div class="count" style="color:#6b21db;">${testing}</div>
+    </div>
+  `;
+}
+
+/* ---------- 탭 콘텐츠 렌더링 ---------- */
+function renderTabContent() {
+  // 1. 탭 필터
+  let filtered = allRequestsCache;
+  if (activeTab === 'delivery') {
+    filtered = allRequestsCache.filter(r => r.status === '배송준비중' || r.status === '배송중');
+  } else if (activeTab === 'return') {
+    filtered = allRequestsCache.filter(r => r.status === '반송신청' || r.status === '반송중');
+  } else if (activeTab === 'testing') {
+    filtered = allRequestsCache.filter(r => r.status === '검사중');
+  } else if (activeTab === 'completed') {
+    filtered = allRequestsCache.filter(r => r.status === '완료');
   }
 
-  document.getElementById('completedWrap').innerHTML = completed.length ? `
+  // 2. 검색어 필터
+  if (searchKeyword) {
+    filtered = filtered.filter(r => {
+      const matchId = (r.id || '').toLowerCase().includes(searchKeyword);
+      const matchCustomer = (r.customerName || '').toLowerCase().includes(searchKeyword);
+      const matchRecipient = (r.recipientName || '').toLowerCase().includes(searchKeyword);
+      const matchPhone = (r.recipientPhone || '').includes(searchKeyword) || (r.customerPhone || '').includes(searchKeyword);
+      const matchAddr = ((r.address || '') + ' ' + (r.addressDetail || '')).toLowerCase().includes(searchKeyword);
+      const matchReturnAddr = ((r.returnAddress || '') + ' ' + (r.returnAddressDetail || '')).toLowerCase().includes(searchKeyword);
+      const matchTracking = (r.trackingNumber || '').toLowerCase().includes(searchKeyword) || (r.returnTrackingNumber || '').toLowerCase().includes(searchKeyword);
+      return matchId || matchCustomer || matchRecipient || matchPhone || matchAddr || matchReturnAddr || matchTracking;
+    });
+  }
+
+  document.getElementById('searchCount').textContent = filtered.length;
+
+  const container = document.getElementById('tabContentWrap');
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="admin-empty">해당 조건에 일치하는 신청 내역이 없어요.</div>';
+    return;
+  }
+
+  if (activeTab === 'delivery') {
+    renderDeliveryView(filtered, container);
+  } else if (activeTab === 'return') {
+    renderReturnView(filtered, container);
+  } else if (activeTab === 'testing') {
+    renderTestingView(filtered, container);
+  } else if (activeTab === 'completed') {
+    renderCompletedView(filtered, container);
+  } else {
+    renderAllView(filtered, container);
+  }
+}
+
+/* =================================================================
+   1) 배송 출고 관리 뷰
+   ================================================================= */
+function renderDeliveryView(list, container) {
+  container.innerHTML = `
     <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>신청번호</th><th>고객</th><th>완료일</th><th>측정값</th><th>결과</th></tr></thead>
+      <table class="data-table admin-table">
+        <thead>
+          <tr>
+            <th style="min-width:130px;">신청번호 / 일시</th>
+            <th style="min-width:140px;">주문 고객</th>
+            <th style="min-width:320px;">배송지 정보 (수령인·연락처·주소)</th>
+            <th style="min-width:260px;">출고 송장 등록 및 처리</th>
+            <th style="min-width:100px;">상태 변경</th>
+          </tr>
+        </thead>
         <tbody>
-          ${completed.map(r => `<tr>
-              <td data-label="신청번호">${escapeHtml(r.id)}</td>
-              <td data-label="고객">${escapeHtml(r.customerName)}</td>
-              <td data-label="완료일">${formatDate(r.date)}</td>
-              <td data-label="측정값">${r.report ? r.report.value + ' μM' : '-'}</td>
-              <td data-label="결과">${r.report ? '상위 ' + r.report.percentile + '%' : '-'}</td>
-            </tr>`).join('')}
+          ${list.map(r => {
+            const fullAddress = `[${r.zonecode || ''}] ${r.address || ''} ${r.addressDetail || ''}`;
+            const copyText = `수령인: ${r.recipientName} | 연락처: ${r.recipientPhone} | 주소: ${fullAddress}`;
+
+            return `
+              <tr>
+                <td data-label="신청정보">
+                  <strong>${escapeHtml(r.id)}</strong>
+                  <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px;">${formatDate(r.date)}</div>
+                </td>
+                <td data-label="고객">
+                  <div><strong>${escapeHtml(r.customerName)}</strong> (${escapeHtml(r.ageGroup)})</div>
+                  <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:2px;">${escapeHtml(r.customerPhone || '-')}</div>
+                </td>
+                <td data-label="배송지">
+                  <div class="admin-addr-card">
+                    <div class="admin-addr-header">
+                      <div>
+                        <strong>${escapeHtml(r.recipientName)}</strong>
+                        <a href="tel:${escapeHtml(r.recipientPhone)}" style="color:var(--text);margin-left:6px;font-weight:600;">${escapeHtml(r.recipientPhone)}</a>
+                      </div>
+                      <button type="button" class="copy-badge-btn" onclick="copyToClipboard('${escapeHtml(copyText)}', '배송지 정보')">주소 복사</button>
+                    </div>
+                    <div>${escapeHtml(fullAddress)}</div>
+                  </div>
+                </td>
+                <td data-label="송장/출고">
+                  <div style="margin-bottom:6px;">
+                    <span class="status-badge status-${statusToClass(r.status)}">${escapeHtml(r.status)}</span>
+                    ${r.shippedAt ? `<span style="font-size:0.78rem;color:var(--text-secondary);margin-left:6px;">출고: ${formatDate(r.shippedAt)}</span>` : ''}
+                  </div>
+                  <div class="tracking-inline-group">
+                    <select id="carrier_${escapeHtml(r.id)}">
+                      ${['CJ대한통운','우체국택배','롯데택배','한진택배','로젠택배'].map(c => `
+                        <option value="${c}" ${r.trackingCarrier === c ? 'selected' : ''}>${c}</option>
+                      `).join('')}
+                    </select>
+                    <input type="text" id="tracking_${escapeHtml(r.id)}" value="${escapeHtml(r.trackingNumber || '')}" placeholder="운송장번호">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveDelivery('${escapeHtml(r.id)}')">
+                      ${r.status === '배송준비중' ? '배송 시작' : '송장 저장'}
+                    </button>
+                  </div>
+                </td>
+                <td data-label="상태변경">
+                  <select onchange="changeStatus('${escapeHtml(r.id)}', this.value)">
+                    ${['배송준비중','배송중','반송신청','반송중','검사중','완료'].map(s => `
+                      <option value="${s}" ${s === r.status ? 'selected' : ''}>${s}</option>
+                    `).join('')}
+                  </select>
+                </td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
       </table>
     </div>
-  ` : '<div class="admin-empty">완료된 검사가 아직 없어요.</div>';
+  `;
 }
 
-async function changeStatus(requestId, newStatus) {
-  const { error } = await sb.rpc('admin_update_status', { p_request_id: requestId, p_status: newStatus });
-  if (error) { alert('상태 변경 중 문제가 발생했어요: ' + error.message); }
-  renderDashboard();
-}
+/* =================================================================
+   2) 반송 회수 관리 뷰
+   ================================================================= */
+function renderReturnView(list, container) {
+  container.innerHTML = `
+    <div class="table-wrap">
+      <table class="data-table admin-table">
+        <thead>
+          <tr>
+            <th style="min-width:130px;">신청번호 / 일시</th>
+            <th style="min-width:140px;">의뢰 고객</th>
+            <th style="min-width:320px;">반송 수거지 정보 (의뢰인·연락처·주소·메모)</th>
+            <th style="min-width:260px;">반송 송장 등록</th>
+            <th style="min-width:140px;">회수 / 입고 처리</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(r => {
+            const retName = r.returnName || r.recipientName;
+            const retPhone = r.returnPhone || r.recipientPhone;
+            const retAddr = `[${r.returnZonecode || r.zonecode || ''}] ${r.returnAddress || r.address || ''} ${r.returnAddressDetail || r.addressDetail || ''}`;
+            const retMemo = r.returnMemo || '문 앞(비대면 수거)';
+            const copyText = `반송의뢰인: ${retName} | 연락처: ${retPhone} | 수거지: ${retAddr} | 메모: ${retMemo}`;
 
-function openResultForm(requestId, customerName, ageGroup) {
-  const ref = NAD_REFERENCE[ageGroup] || NAD_REFERENCE['30대'];
-  const wrap = document.getElementById('resultFormWrap');
-  wrap.innerHTML = `
-    <div class="admin-row-form">
-      <h3>결과 입력 — ${escapeHtml(customerName)}님 (${ageGroup})</h3>
-      <p class="sub">신청번호 ${escapeHtml(requestId)} · ${ageGroup} 참고분포 평균 ${ref.mean}μM 기준으로 퍼센타일을 계산해요</p>
-      <div class="admin-field-row">
-        <div class="field" style="margin-bottom:0;">
-          <label for="resultValue">NAD+ 측정값 (μM)</label>
-          <input type="number" id="resultValue" step="0.1" min="0" placeholder="예: 38.4" oninput="previewPercentile('${ageGroup}')">
-        </div>
-        <button type="button" class="btn btn-primary" id="submitResultBtn" onclick="submitResult('${escapeHtml(requestId)}','${ageGroup}')">저장하고 완료 처리</button>
-      </div>
-      <div id="pctPreview" style="margin-top:14px;"></div>
+            return `
+              <tr>
+                <td data-label="신청정보">
+                  <strong>${escapeHtml(r.id)}</strong>
+                  <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px;">
+                    신청: ${r.returnRequestedAt ? formatDate(r.returnRequestedAt) : formatDate(r.date)}
+                  </div>
+                </td>
+                <td data-label="고객">
+                  <div><strong>${escapeHtml(r.customerName)}</strong></div>
+                  <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:2px;">${escapeHtml(r.customerPhone || '-')}</div>
+                </td>
+                <td data-label="수거지">
+                  <div class="admin-addr-card">
+                    <div class="admin-addr-header">
+                      <div>
+                        <strong>${escapeHtml(retName)}</strong>
+                        <a href="tel:${escapeHtml(retPhone)}" style="color:var(--text);margin-left:6px;font-weight:600;">${escapeHtml(retPhone)}</a>
+                      </div>
+                      <button type="button" class="copy-badge-btn" onclick="copyToClipboard('${escapeHtml(copyText)}', '반송 수거지')">수거정보 복사</button>
+                    </div>
+                    <div>${escapeHtml(retAddr)}</div>
+                    <div style="font-size:0.8rem;color:var(--red);margin-top:4px;font-weight:500;">
+                      메모: ${escapeHtml(retMemo)}
+                    </div>
+                  </div>
+                </td>
+                <td data-label="반송송장">
+                  <div style="margin-bottom:6px;">
+                    <span class="status-badge status-${statusToClass(r.status)}">${escapeHtml(r.status)}</span>
+                  </div>
+                  <div class="tracking-inline-group">
+                    <select id="retCarrier_${escapeHtml(r.id)}">
+                      ${['CJ대한통운','우체국택배','롯데택배','한진택배','로젠택배'].map(c => `
+                        <option value="${c}" ${r.returnCarrier === c ? 'selected' : ''}>${c}</option>
+                      `).join('')}
+                    </select>
+                    <input type="text" id="retTracking_${escapeHtml(r.id)}" value="${escapeHtml(r.returnTrackingNumber || '')}" placeholder="반송운송장">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="saveReturn('${escapeHtml(r.id)}')">저장</button>
+                  </div>
+                </td>
+                <td data-label="처리액션">
+                  <div style="display:flex;flex-direction:column;gap:6px;">
+                    ${r.status === '반송신청' ? `
+                      <button type="button" class="btn btn-outline btn-sm" onclick="markAsReturnShipping('${escapeHtml(r.id)}')">
+                        🚛 수거중 처리
+                      </button>
+                    ` : ''}
+                    <button type="button" class="btn btn-primary btn-sm" onclick="markAsTesting('${escapeHtml(r.id)}')">
+                      🔬 검체 입고(검사중)
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
     </div>
   `;
-  wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-function previewPercentile(ageGroup) {
-  const val = parseFloat(document.getElementById('resultValue').value);
-  const previewEl = document.getElementById('pctPreview');
-  if (isNaN(val)) { previewEl.innerHTML = ''; return; }
-  const pct = calculatePercentileTop(val, ageGroup);
-  previewEl.innerHTML = '<span class="admin-preview">계산된 결과: 동년배(' + ageGroup + ') 대비 상위 ' + pct + '%</span>';
+/* =================================================================
+   3) 검사 및 결과 등록 뷰
+   ================================================================= */
+function renderTestingView(list, container) {
+  container.innerHTML = `
+    <div class="table-wrap">
+      <table class="data-table admin-table">
+        <thead>
+          <tr>
+            <th style="min-width:130px;">신청번호</th>
+            <th style="min-width:160px;">고객 정보</th>
+            <th style="min-width:200px;">동년배 참고분포</th>
+            <th style="min-width:120px;">진행 상태</th>
+            <th style="min-width:130px;">결과 등록</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(r => {
+            const ref = NAD_REFERENCE[r.ageGroup] || NAD_REFERENCE['30대'];
+            return `
+              <tr>
+                <td data-label="신청번호"><strong>${escapeHtml(r.id)}</strong></td>
+                <td data-label="고객정보">
+                  <div><strong>${escapeHtml(r.customerName)}</strong> (${escapeHtml(r.ageGroup)})</div>
+                  <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:2px;">
+                    ${escapeHtml(r.customerGender || '')} · ${escapeHtml(r.customerPhone || '')}
+                  </div>
+                </td>
+                <td data-label="참고분포">
+                  <div style="font-size:0.86rem;line-height:1.5;">
+                    평균: <strong>${ref.mean} μM</strong> / 표준편차: <strong>${ref.sd}</strong>
+                  </div>
+                  <div style="font-size:0.78rem;color:var(--text-tertiary);">${r.ageGroup} 그룹 기준</div>
+                </td>
+                <td data-label="진행상태">
+                  <span class="status-badge status-testing">검사 분석 진행 중</span>
+                </td>
+                <td data-label="결과등록">
+                  <button type="button" class="btn btn-primary btn-sm" onclick="openResultModal('${escapeHtml(r.id)}','${escapeHtml(r.customerName)}','${escapeHtml(r.ageGroup)}')">
+                    결과 입력 및 발행
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
-async function submitResult(requestId, ageGroup) {
-  const val = parseFloat(document.getElementById('resultValue').value);
-  if (isNaN(val) || val <= 0) {
-    alert('NAD+ 측정값을 올바르게 입력해주세요.');
-    return;
-  }
-  const btn = document.getElementById('submitResultBtn');
-  btn.disabled = true;
-  btn.textContent = '저장 중...';
+/* =================================================================
+   4) 완료된 리포트 뷰
+   ================================================================= */
+function renderCompletedView(list, container) {
+  container.innerHTML = `
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>신청번호</th>
+            <th>고객</th>
+            <th>완료일</th>
+            <th>측정값 (μM)</th>
+            <th>백분위 순위</th>
+            <th>리포트 열람</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(r => `
+            <tr>
+              <td data-label="신청번호"><strong>${escapeHtml(r.id)}</strong></td>
+              <td data-label="고객">${escapeHtml(r.customerName)} (${escapeHtml(r.ageGroup)})</td>
+              <td data-label="완료일">${formatDate(r.date)}</td>
+              <td data-label="측정값"><strong style="color:var(--red);">${r.report ? r.report.value + ' μM' : '-'}</strong></td>
+              <td data-label="순위">${r.report ? '상위 ' + r.report.percentile + '%' : '-'}</td>
+              <td data-label="리포트">
+                <a href="report.html?id=${encodeURIComponent(r.id)}" target="_blank" class="link-arrow">
+                  리포트 보기 ↗
+                </a>
+              </td>
+              <td data-label="관리">
+                <button type="button" class="btn btn-outline btn-sm" onclick="openResultModal('${escapeHtml(r.id)}','${escapeHtml(r.customerName)}','${escapeHtml(r.ageGroup)}', ${r.report ? r.report.value : "''"})">
+                  결과 수정
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
 
-  const pct = calculatePercentileTop(val, ageGroup);
-  const { error } = await sb.rpc('admin_record_result', {
-    p_request_id: requestId, p_value: val, p_percentile: pct, p_age_group: ageGroup
+/* =================================================================
+   5) 전체보기 뷰
+   ================================================================= */
+function renderAllView(list, container) {
+  container.innerHTML = `
+    <div class="table-wrap">
+      <table class="data-table admin-table">
+        <thead>
+          <tr>
+            <th style="min-width:130px;">신청번호/일자</th>
+            <th style="min-width:140px;">고객</th>
+            <th style="min-width:120px;">현재 상태</th>
+            <th style="min-width:280px;">배송 / 반송 정보</th>
+            <th style="min-width:140px;">리포트 / 액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(r => {
+            let infoBox = '';
+            if (r.status === '배송준비중' || r.status === '배송중') {
+              infoBox = `
+                <div style="font-size:0.86rem;line-height:1.4;">
+                  <div>수령인: <strong>${escapeHtml(r.recipientName)}</strong> (${escapeHtml(r.recipientPhone)})</div>
+                  <div style="color:var(--text-secondary);font-size:0.8rem;">[${escapeHtml(r.zonecode || '')}] ${escapeHtml(r.address || '')} ${escapeHtml(r.addressDetail || '')}</div>
+                  ${r.trackingNumber ? `<div style="font-size:0.8rem;margin-top:2px;">송장: ${escapeHtml(r.trackingCarrier)} ${escapeHtml(r.trackingNumber)}</div>` : ''}
+                </div>
+              `;
+            } else if (r.status === '반송신청' || r.status === '반송중') {
+              infoBox = `
+                <div style="font-size:0.86rem;line-height:1.4;">
+                  <div>반송인: <strong>${escapeHtml(r.returnName || r.recipientName)}</strong> (${escapeHtml(r.returnPhone || r.recipientPhone)})</div>
+                  <div style="color:var(--text-secondary);font-size:0.8rem;">수거지: [${escapeHtml(r.returnZonecode || r.zonecode || '')}] ${escapeHtml(r.returnAddress || r.address || '')}</div>
+                  <div style="font-size:0.8rem;color:var(--red);">메모: ${escapeHtml(r.returnMemo || '문 앞')}</div>
+                </div>
+              `;
+            } else if (r.status === '검사중') {
+              infoBox = `<span style="color:#6b21db;font-weight:600;font-size:0.88rem;">연구소 정밀 분석 진행 중</span>`;
+            } else if (r.status === '완료') {
+              infoBox = `
+                <div style="font-size:0.86rem;">
+                  측정치: <strong>${r.report ? r.report.value + ' μM' : '-'}</strong> (상위 ${r.report ? r.report.percentile + '%' : '-'})
+                </div>
+              `;
+            }
+
+            return `
+              <tr>
+                <td data-label="신청정보">
+                  <strong>${escapeHtml(r.id)}</strong>
+                  <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px;">${formatDate(r.date)}</div>
+                </td>
+                <td data-label="고객">
+                  <div><strong>${escapeHtml(r.customerName)}</strong></div>
+                  <div style="font-size:0.8rem;color:var(--text-secondary);">${escapeHtml(r.ageGroup)} · ${escapeHtml(r.customerPhone || '')}</div>
+                </td>
+                <td data-label="상태">
+                  <select onchange="changeStatus('${escapeHtml(r.id)}', this.value)">
+                    ${['배송준비중','배송중','반송신청','반송중','검사중','완료'].map(s => `
+                      <option value="${s}" ${s === r.status ? 'selected' : ''}>${s}</option>
+                    `).join('')}
+                  </select>
+                </td>
+                <td data-label="상세정보">${infoBox}</td>
+                <td data-label="액션">
+                  ${r.status === '완료' ? `
+                    <a href="report.html?id=${encodeURIComponent(r.id)}" target="_blank" class="link-arrow">리포트 보기 ↗</a>
+                  ` : (r.status === '검사중' ? `
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openResultModal('${escapeHtml(r.id)}','${escapeHtml(r.customerName)}','${escapeHtml(r.ageGroup)}')">결과 입력</button>
+                  ` : (r.status === '반송신청' || r.status === '반송중' ? `
+                    <button type="button" class="btn btn-outline btn-sm" onclick="markAsTesting('${escapeHtml(r.id)}')">검체 입고</button>
+                  ` : `
+                    <button type="button" class="btn btn-outline btn-sm" onclick="switchTab('delivery')">배송 관리</button>
+                  `))}
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* =================================================================
+   비즈니스 로직 함수들 (RPC 호출)
+   ================================================================= */
+
+/* 1. 배송 시작 / 송장 등록 */
+async function saveDelivery(requestId) {
+  const carrierEl = document.getElementById('carrier_' + requestId);
+  const trackingEl = document.getElementById('tracking_' + requestId);
+  const carrier = carrierEl ? carrierEl.value : 'CJ대한통운';
+  const tracking = trackingEl ? trackingEl.value.trim() : '';
+
+  const { error } = await sb.rpc('admin_update_delivery', {
+    p_request_id: requestId,
+    p_status: '배송중',
+    p_carrier: carrier,
+    p_tracking_number: tracking
   });
+
   if (error) {
-    alert('저장 중 문제가 발생했어요: ' + error.message);
-    btn.disabled = false;
-    btn.textContent = '저장하고 완료 처리';
+    alert('배송 정보 저장 실패: ' + error.message);
     return;
   }
+  showToast('배송 정보가 성공적으로 반영되었어요.');
   renderDashboard();
 }
+
+/* 2. 반송 송장 저장 */
+async function saveReturn(requestId) {
+  const carrierEl = document.getElementById('retCarrier_' + requestId);
+  const trackingEl = document.getElementById('retTracking_' + requestId);
+  const carrier = carrierEl ? carrierEl.value : 'CJ대한통운';
+  const tracking = trackingEl ? trackingEl.value.trim() : '';
+
+  const { error } = await sb.rpc('admin_update_return', {
+    p_request_id: requestId,
+    p_status: null,
+    p_carrier: carrier,
+    p_tracking_number: tracking
+  });
+
+  if (error) {
+    alert('반송 정보 저장 실패: ' + error.message);
+    return;
+  }
+  showToast('반송 송장 정보가 저장되었어요.');
+  renderDashboard();
+}
+
+/* 3. 반송 수거중 처리 */
+async function markAsReturnShipping(requestId) {
+  const carrierEl = document.getElementById('retCarrier_' + requestId);
+  const trackingEl = document.getElementById('retTracking_' + requestId);
+  const carrier = carrierEl ? carrierEl.value : 'CJ대한통운';
+  const tracking = trackingEl ? trackingEl.value.trim() : '';
+
+  const { error } = await sb.rpc('admin_update_return', {
+    p_request_id: requestId,
+    p_status: '반송중',
+    p_carrier: carrier,
+    p_tracking_number: tracking
+  });
+
+  if (error) {
+    alert('상태 변경 실패: ' + error.message);
+    return;
+  }
+  showToast('반송중(회수 진행) 상태로 변경되었어요.');
+  renderDashboard();
+}
+
+/* 4. 검체 입고 확인 (검사중으로 전환) */
+async function markAsTesting(requestId) {
+  const { error } = await sb.rpc('admin_update_status', {
+    p_request_id: requestId,
+    p_status: '검사중'
+  });
+
+  if (error) {
+    alert('상태 변경 실패: ' + error.message);
+    return;
+  }
+  showToast('검체 입고가 확인되어 [검사중]으로 전환되었어요.');
+  renderDashboard();
+}
+
+/* 5. 임의 상태 변경 */
+async function changeStatus(requestId, newStatus) {
+  const { error } = await sb.rpc('admin_update_status', { p_request_id: requestId, p_status: newStatus });
+  if (error) {
+    alert('상태 변경 중 문제가 발생했어요: ' + error.message);
+    return;
+  }
+  showToast('신청 상태가 [' + newStatus + '](으)로 변경되었어요.');
+  renderDashboard();
+}
+
+/* 6. 결과 입력 및 리포트 발행 모달 */
+function openResultModal(requestId, customerName, ageGroup, currentValue) {
+  currentModalRequestId = requestId;
+  currentModalAgeGroup = ageGroup || '30대';
+
+  const ref = NAD_REFERENCE[currentModalAgeGroup] || NAD_REFERENCE['30대'];
+  document.getElementById('resultModalTitle').textContent = `검사 결과 입력 — ${customerName}님 (${currentModalAgeGroup})`;
+  document.getElementById('resultModalClientInfo').innerHTML = `
+    <strong>신청번호:</strong> ${escapeHtml(requestId)}<br>
+    <strong>동년배 참고분포:</strong> ${currentModalAgeGroup} 그룹 (평균 ${ref.mean} μM, 표준편차 ${ref.sd})<br>
+    입력하신 수치에 맞춰 동년배 대비 상위 백분위(%)가 자동 산출되어 고객 리포트로 발행됩니다.
+  `;
+
+  const inputEl = document.getElementById('resultValue');
+  inputEl.value = (currentValue != null && currentValue !== '') ? currentValue : '';
+  previewModalPercentile();
+
+  openAdminModal('resultModal');
+}
+
+function previewModalPercentile() {
+  const val = parseFloat(document.getElementById('resultValue').value);
+  const previewEl = document.getElementById('resultModalPreview');
+  if (isNaN(val)) {
+    previewEl.innerHTML = '';
+    return;
+  }
+  const pct = calculatePercentileTop(val, currentModalAgeGroup);
+  previewEl.innerHTML = `
+    <div style="background:var(--red-tint);color:var(--red-dark);padding:14px 18px;border-radius:var(--r-sm);font-weight:700;">
+      산출 백분위: ${currentModalAgeGroup} 동년배 대비 <span style="font-size:1.25rem;color:var(--red);text-decoration:underline;">상위 ${pct}%</span>
+      <div style="font-size:0.8rem;font-weight:400;margin-top:4px;color:var(--text-secondary);">
+        * 상위 %가 작을수록 해당 연령대 평균보다 NAD+ 수치가 높은 편이에요.
+      </div>
+    </div>
+  `;
+}
+
+async function submitModalResult() {
+  const val = parseFloat(document.getElementById('resultValue').value);
+  if (isNaN(val) || val <= 0) {
+    alert('NAD+ 측정값을 0보다 큰 숫자로 올바르게 입력해주세요.');
+    return;
+  }
+
+  const btn = document.getElementById('saveResultBtn');
+  btn.disabled = true;
+  btn.textContent = '리포트 발행 중...';
+
+  const pct = calculatePercentileTop(val, currentModalAgeGroup);
+  const { error } = await sb.rpc('admin_record_result', {
+    p_request_id: currentModalRequestId,
+    p_value: val,
+    p_percentile: pct,
+    p_age_group: currentModalAgeGroup
+  });
+
+  if (error) {
+    alert('결과 저장 실패: ' + error.message);
+    btn.disabled = false;
+    btn.textContent = '저장하고 리포트 발행';
+    return;
+  }
+
+  closeAdminModal('resultModal');
+  btn.disabled = false;
+  btn.textContent = '저장하고 리포트 발행';
+  showToast('검사 결과가 등록되고 리포트가 발행되었어요.');
+  renderDashboard();
+}
+
+/* ---------- 초기 로드 및 인증 체크 ---------- */
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    window.location.href = 'login.html?redirect=admin';
+    return;
+  }
+  if (user.role !== 'admin') {
+    document.querySelector('.admin-shell').innerHTML = `
+      <div class="admin-empty" style="padding:60px 24px;">
+        <h3 style="margin-bottom:8px;font-size:1.3rem;">접근 권한이 없습니다</h3>
+        <p style="color:var(--text-secondary);margin-bottom:24px;">관리자(admin) 권한을 가진 계정으로만 이용할 수 있습니다.</p>
+        <a href="index.html" class="btn btn-dark">홈으로 돌아가기</a>
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById('adminLogoutBtn').style.display = 'inline-flex';
+  const emailEl = document.getElementById('adminUserEmail');
+  if (emailEl) emailEl.textContent = user.email || '';
+
+  renderDashboard();
+});
 </script>
 </body>
 </html>

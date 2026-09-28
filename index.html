@@ -934,6 +934,11 @@ table.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
 
 </main>
 
+<div class="toast" id="toast">
+  <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 5-5.5"/></svg></span>
+  <span id="toastText"></span>
+</div>
+
 <footer class="site-footer">
   <div class="container">
     <div class="footer-top">
@@ -1171,6 +1176,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initNavScroll();
   initFAQ();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('withdrawn') === '1') {
+    showToast('회원 탈퇴가 안전하게 처리되었어요. 이용해 주셔서 감사합니다.');
+  }
 });
 
 </script>
