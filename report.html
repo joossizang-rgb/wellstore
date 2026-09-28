@@ -1070,7 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- 정기검사 추이 그래프 (실제 리포트 기반) ---------- */
   function buildTrendSVG(items, currentId) {
     // items: [{ id, percentile, date }] 오래된 순
-    const W = 400, H = 170, left = 40, right = 380, top = 40, base = 140;
+    const W = 400, H = 195, left = 40, right = 380, top = 40, base = 140;
     const n = items.length;
     const xs = items.map((_, i) => n === 1 ? (left + right) / 2 : left + 30 + i * ((right - left - 60) / (n - 1)));
     // 상위 % 가 낮을수록(좋을수록) 위로 — 1%면 top, 99%면 base
